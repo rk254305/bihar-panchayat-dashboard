@@ -309,14 +309,14 @@ def process_live_data(sheets_data):
     }
 
     # Persist updated files to disk
-    os.makedirs('public', exist_ok=True)
-    with open('public/dashboard_summary.json', 'w', encoding='utf-8') as f:
+    os.makedirs('data', exist_ok=True)
+    with open('data/dashboard_summary.json', 'w', encoding='utf-8') as f:
         json.dump(summary, f, indent=2)
 
-    with open('public/zp_candidates.json', 'w', encoding='utf-8') as f:
+    with open('data/zp_candidates.json', 'w', encoding='utf-8') as f:
         json.dump(zp_candidates, f)
 
-    with open('public/bp_candidates.json', 'w', encoding='utf-8') as f:
+    with open('data/bp_candidates.json', 'w', encoding='utf-8') as f:
         json.dump(bp_candidates, f)
 
     _cache['last_synced'] = now_iso

@@ -348,7 +348,7 @@ state.geoMapMetric = 'zp'; // 'zp', 'bp', 'females', 'gap'
 async function loadGeoDistrictData() {
   if (state.geoDistrictData) return state.geoDistrictData;
   try {
-    const res = await fetch('public/bihar_district_map_data.json?t=' + Date.now());
+    const res = await fetch('data/bihar_district_map_data.json?t=' + Date.now());
     if (res.ok) {
       state.geoDistrictData = await res.json();
     }
@@ -991,7 +991,7 @@ function showToast(message, type = 'info') {
 
 // Data Fetching & Dynamic Syncing
 async function loadSummaryData() {
-  const resp = await fetch('public/dashboard_summary.json?t=' + Date.now());
+  const resp = await fetch('data/dashboard_summary.json?t=' + Date.now());
   if (!resp.ok) throw new Error('Could not load summary');
   state.summary = await resp.json();
   state.lastSyncedTimestamp = new Date(state.summary.meta.lastSynced || Date.now());
@@ -1077,7 +1077,7 @@ async function loadZpCandidates() {
   const loader = document.getElementById('zp-candidate-loader');
   if (loader) loader.classList.remove('hidden');
   try {
-    const resp = await fetch('public/zp_candidates.json?t=' + Date.now());
+    const resp = await fetch('data/zp_candidates.json?t=' + Date.now());
     state.zpCandidates = await resp.json();
   } catch (e) {
     console.error('Error loading ZP candidates:', e);
@@ -1094,7 +1094,7 @@ async function loadBpCandidates() {
   const loader = document.getElementById('bp-candidate-loader');
   if (loader) loader.classList.remove('hidden');
   try {
-    const resp = await fetch('public/bp_candidates.json?t=' + Date.now());
+    const resp = await fetch('data/bp_candidates.json?t=' + Date.now());
     state.bpCandidates = await resp.json();
   } catch (e) {
     console.error('Error loading BP candidates:', e);
