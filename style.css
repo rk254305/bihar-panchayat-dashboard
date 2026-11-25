@@ -1,0 +1,1041 @@
+/* ==========================================================================
+   Panchayat Bihar 2026 Dashboard - Executive Design System
+   Fonts: IBM Plex Sans (Sans default), IBM Plex Mono (Monospace numbers), Noto Sans Devanagari / Mukta (Hindi)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Mukta:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
+
+/* ==========================================================================
+   PART 2: 10 THEMES SYSTEM - Keyed by [data-theme="slug"] on html
+   ========================================================================== */
+html,
+html[data-theme="kosi-delta"] {
+  --bg: #EEF2F1;
+  --surface: #FFFFFF;
+  --ink: #12262B;
+  --primary: #0F5C6E;
+  --accent: #E39B2D;
+  --alert: #C2412D;
+}
+
+html[data-theme="litti-earth"] {
+  --bg: #F3ECE2;
+  --surface: #FBF8F3;
+  --ink: #2A1F1A;
+  --primary: #7A3E1D;
+  --accent: #C98B2B;
+  --alert: #A32A2A;
+}
+
+html[data-theme="maroon-saffron"] {
+  --bg: #F7F1E8;
+  --surface: #FFFDF9;
+  --ink: #2B1B1E;
+  --primary: #7B1E3A;
+  --accent: #E89A1E;
+  --alert: #D4380D;
+}
+
+html[data-theme="slate-lime"] {
+  --bg: #F3F4F6;
+  --surface: #FFFFFF;
+  --ink: #151A21;
+  --primary: #2F3E54;
+  --accent: #A3C93A;
+  --alert: #E0483A;
+}
+
+html[data-theme="midnight-navy"] {
+  --bg: #0B1220;
+  --surface: #121B2E;
+  --ink: #E6EAF2;
+  --primary: #5B8DEF;
+  --accent: #F2B84B;
+  --alert: #F26D6D;
+}
+
+html[data-theme="charcoal-copper"] {
+  --bg: #14110F;
+  --surface: #1D1916;
+  --ink: #EDE6DC;
+  --primary: #D08A4E;
+  --accent: #7FB2A3;
+  --alert: #E5604D;
+}
+
+html[data-theme="sage-plum"] {
+  --bg: #EEF0E8;
+  --surface: #FBFBF7;
+  --ink: #1E2420;
+  --primary: #4F6B52;
+  --accent: #8E4A6B;
+  --alert: #B5452F;
+}
+
+html[data-theme="paper-cobalt"] {
+  --bg: #FFFFFF;
+  --surface: #F6F6F3;
+  --ink: #101114;
+  --primary: #1F3FD6;
+  --accent: #FF7A1A;
+  --alert: #D91E3D;
+}
+
+html[data-theme="terracotta-teal"] {
+  --bg: #F6EEE6;
+  --surface: #FFFAF4;
+  --ink: #2B2220;
+  --primary: #1C6B66;
+  --accent: #D1623A;
+  --alert: #A8281F;
+}
+
+html[data-theme="monsoon-gold"] {
+  --bg: #EAF0EA;
+  --surface: #F8FBF7;
+  --ink: #14231B;
+  --primary: #14573A;
+  --accent: #C9A227;
+  --alert: #BF3B2B;
+}
+
+/* Static Theme Preview Dots (Only hexes allowed in the stylesheet) */
+.preview-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.theme-dot-kosi-p { background-color: #0F5C6E; }
+.theme-dot-kosi-a { background-color: #E39B2D; }
+.theme-dot-kosi-w { background-color: #C2412D; }
+
+.theme-dot-litti-p { background-color: #7A3E1D; }
+.theme-dot-litti-a { background-color: #C98B2B; }
+.theme-dot-litti-w { background-color: #A32A2A; }
+
+.theme-dot-maroon-p { background-color: #7B1E3A; }
+.theme-dot-maroon-a { background-color: #E89A1E; }
+.theme-dot-maroon-w { background-color: #D4380D; }
+
+.theme-dot-slate-p { background-color: #2F3E54; }
+.theme-dot-slate-a { background-color: #A3C93A; }
+.theme-dot-slate-w { background-color: #E0483A; }
+
+.theme-dot-midnight-p { background-color: #5B8DEF; }
+.theme-dot-midnight-a { background-color: #F2B84B; }
+.theme-dot-midnight-w { background-color: #F26D6D; }
+
+.theme-dot-charcoal-p { background-color: #D08A4E; }
+.theme-dot-charcoal-a { background-color: #7FB2A3; }
+.theme-dot-charcoal-w { background-color: #E5604D; }
+
+.theme-dot-sage-p { background-color: #4F6B52; }
+.theme-dot-sage-a { background-color: #8E4A6B; }
+.theme-dot-sage-w { background-color: #B5452F; }
+
+.theme-dot-paper-p { background-color: #1F3FD6; }
+.theme-dot-paper-a { background-color: #FF7A1A; }
+.theme-dot-paper-w { background-color: #D91E3D; }
+
+.theme-dot-terracotta-p { background-color: #1C6B66; }
+.theme-dot-terracotta-a { background-color: #D1623A; }
+.theme-dot-terracotta-w { background-color: #A8281F; }
+
+.theme-dot-monsoon-p { background-color: #14573A; }
+.theme-dot-monsoon-a { background-color: #C9A227; }
+.theme-dot-monsoon-w { background-color: #BF3B2B; }
+
+/* ==========================================================================
+   DERIVED VARIABLES & BACKWARD COMPATIBILITY
+   ========================================================================== */
+html {
+  --line: color-mix(in srgb, var(--ink) 14%, var(--surface));
+  --muted: color-mix(in srgb, var(--ink) 68%, var(--surface));
+  --primary-soft: color-mix(in srgb, var(--primary) 12%, var(--surface));
+  --accent-soft: color-mix(in srgb, var(--accent) 15%, var(--surface));
+  --alert-soft: color-mix(in srgb, var(--alert) 12%, var(--surface));
+  --accent-text: color-mix(in srgb, var(--accent) 50%, var(--ink));
+  --surface-hover: color-mix(in srgb, var(--ink) 6%, var(--surface));
+  --surface-subtle: color-mix(in srgb, var(--ink) 4%, var(--surface));
+
+  /* Backward Compatibility Aliases */
+  --bg-page: var(--bg);
+  --surface-card: var(--surface);
+  --hairline: var(--line);
+  --hairline-subtle: var(--line);
+  --ink-text: var(--ink);
+  --ink-muted: var(--muted);
+  --ink-faint: color-mix(in srgb, var(--ink) 40%, var(--surface));
+  --color-zp: var(--primary);
+  --color-zp-subtle: var(--primary-soft);
+  --color-bp: var(--accent);
+  --color-bp-subtle: var(--accent-soft);
+  --color-alert: var(--alert);
+  --color-alert-subtle: var(--alert-soft);
+  --color-positive: var(--primary);
+  --color-positive-subtle: var(--primary-soft);
+
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-hindi: 'Noto Sans Devanagari', 'Mukta', sans-serif;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+}
+
+/* Base Document Styles & Fluid Responsive Sizing */
+html {
+  font-size: 16px;
+  width: 100%;
+  min-height: 100vh;
+}
+
+@media (min-width: 1200px) {
+  html {
+    font-size: 17.5px;
+  }
+}
+
+@media (min-width: 1440px) {
+  html {
+    font-size: 19px;
+  }
+}
+
+@media (min-width: 1920px) {
+  html {
+    font-size: 20.5px;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  font-family: var(--font-sans);
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--ink-text);
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Typography Utilities */
+.font-sans {
+  font-family: var(--font-sans) !important;
+}
+
+.font-display {
+  font-family: var(--font-display) !important;
+  font-feature-settings: 'tnum' 1, 'cv02' 1;
+}
+
+.font-mono {
+  font-family: var(--font-mono) !important;
+  font-feature-settings: 'tnum' 1, 'zero' 1;
+}
+
+.font-hindi {
+  font-family: var(--font-hindi) !important;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Editorial Hairline Cards (No soft shadows, 6px corners, 1px hairlines) */
+.editorial-card {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: none !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.editorial-card-hero {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: none !important;
+  position: relative;
+}
+
+/* Asymmetrical Hero Section */
+.hero-zp-dominant {
+  border-top: 3px solid var(--color-zp);
+}
+
+.hero-bp-card {
+  border-top: 3px solid var(--color-bp);
+}
+
+.hero-subcard {
+  border-top: 2px solid var(--hairline);
+}
+
+/* Hairline dividers */
+.hairline-b {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.hairline-t {
+  border-top: 1px solid var(--hairline);
+}
+
+.hairline-r {
+  border-right: 1px solid var(--hairline);
+}
+
+.hairline-l {
+  border-left: 1px solid var(--hairline);
+}
+
+/* Action Buttons (Editorial style: clean, rectangular, 6px radius) */
+.editorial-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: 1px solid var(--hairline);
+  background-color: var(--surface-card);
+  color: var(--ink-text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.editorial-btn:hover {
+  background-color: var(--surface-hover);
+  border-color: var(--ink-muted);
+}
+
+.editorial-btn-primary {
+  background-color: var(--color-zp);
+  color: var(--surface);
+  border: 1px solid var(--color-zp);
+}
+
+.editorial-btn-primary:hover {
+  opacity: 0.92;
+  color: var(--surface);
+}
+
+.editorial-btn-turmeric {
+  background-color: var(--color-bp);
+  color: var(--ink);
+  border: 1px solid var(--color-bp);
+}
+
+/* Navigation Links (Sidebar) */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.sidebar-link:hover {
+  color: var(--ink-text);
+  background-color: var(--surface-subtle);
+  border-color: var(--hairline);
+}
+
+.sidebar-link-active {
+  background-color: var(--surface-card) !important;
+  color: var(--ink-text) !important;
+  border: 1px solid var(--hairline) !important;
+  font-weight: 700 !important;
+}
+
+.drawer-sublink {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  padding-left: 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-muted);
+  border: 1px solid transparent;
+  transition: all 0.12s ease;
+  cursor: pointer;
+}
+
+.drawer-sublink:hover {
+  color: var(--ink-text);
+  background-color: var(--surface-subtle);
+}
+
+.drawer-sublink-active {
+  background-color: var(--color-zp-subtle) !important;
+  color: var(--color-zp) !important;
+  font-weight: 700 !important;
+  border-color: var(--color-zp) !important;
+}
+
+/* Pill / Tab Segment Controls */
+.pill-filter-group {
+  background-color: var(--surface-subtle);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  padding: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.pill-filter-btn {
+  padding: 0.35rem 0.8rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  background: transparent;
+  border: none;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.pill-filter-btn:hover {
+  color: var(--ink-text);
+}
+
+.pill-filter-btn-active {
+  background-color: var(--surface-card);
+  color: var(--ink-text);
+  border: 1px solid var(--hairline);
+  font-weight: 700;
+}
+
+/* Action List (Ranked Executive Action Items) */
+.action-item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--hairline-subtle);
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.action-item-row:last-child {
+  border-bottom: none;
+}
+
+.action-item-row:hover {
+  background-color: var(--surface-subtle);
+}
+
+.severity-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.dot-p0 {
+  background-color: var(--color-alert);
+}
+
+.dot-p1 {
+  background-color: var(--color-bp);
+}
+
+.dot-p2 {
+  background-color: var(--color-zp);
+}
+
+.dot-p3 {
+  background-color: var(--color-positive);
+}
+
+/* Severity Tag Badges */
+.tag-p0 {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-alert-subtle);
+  color: var(--color-alert);
+  border: 1px solid var(--color-alert);
+  text-transform: uppercase;
+}
+
+.tag-p1 {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bp-subtle);
+  color: var(--color-bp);
+  border: 1px solid var(--color-bp);
+  text-transform: uppercase;
+}
+
+.tag-p2 {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-zp-subtle);
+  color: var(--color-zp);
+  border: 1px solid var(--color-zp);
+  text-transform: uppercase;
+}
+
+/* Bihar Interactive District Map (SVG) */
+.bihar-map-container {
+  position: relative;
+  width: 100%;
+  max-height: 520px;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: none !important;
+}
+
+.bihar-district-path,
+.bihar-district-boundary {
+  stroke: var(--line);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bihar-district-path:hover,
+.bihar-district-boundary:hover,
+.bihar-district-boundary.active-selected {
+  stroke: var(--ink) !important;
+  stroke-width: 1.5px !important;
+  vector-effect: non-scaling-stroke !important;
+  filter: brightness(0.92);
+}
+
+.bihar-district-label,
+.bihar-geo-label {
+  font-family: var(--font-sans);
+  font-size: 8.5px;
+  font-weight: 700;
+  fill: #111827;
+  paint-order: stroke fill;
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 1.8px;
+  stroke-linejoin: round;
+  letter-spacing: -0.15px;
+  pointer-events: none;
+  text-anchor: middle;
+}
+
+/* Map Floating Tooltip */
+.map-tooltip {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  padding: 0.625rem 0.875rem;
+  border-radius: 8px;
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.28), 0 8px 12px -6px rgba(0, 0, 0, 0.2);
+  font-size: 0.75rem;
+  min-width: 230px;
+  max-width: 290px;
+  width: max-content;
+  display: none;
+}
+
+/* Clean Editorial Tables */
+.editorial-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.875rem;
+}
+
+.editorial-table th {
+  background-color: var(--surface-subtle);
+  border-bottom: 1px solid var(--hairline);
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.625rem 0.75rem;
+}
+
+.editorial-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--hairline-subtle);
+  color: var(--ink-text);
+}
+
+.editorial-table tbody tr:hover td {
+  background-color: var(--surface-hover);
+}
+
+.editorial-table tbody tr.row-gap td {
+  background-color: var(--color-alert-subtle);
+}
+
+/* Clean Executive Progress Bar */
+.gap-progress-bar {
+  display: flex;
+  align-items: center;
+  height: 10px;
+  width: 100%;
+  border-radius: 9999px;
+  overflow: hidden;
+  background-color: var(--surface-subtle);
+  border: 1px solid var(--hairline);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.gap-progress-filled-zp {
+  background: linear-gradient(90deg, var(--color-zp) 0%, #5e7d67 100%);
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gap-progress-filled-bp {
+  background: linear-gradient(90deg, var(--color-bp) 0%, #9b4b63 100%);
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gap-progress-remaining {
+  background: transparent;
+  height: 100%;
+}
+
+/* Theme Switcher Toggle */
+.theme-switch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--hairline);
+  background-color: var(--surface-card);
+  color: var(--ink-text);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.theme-switch-btn:hover {
+  background-color: var(--surface-subtle);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--hairline);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-muted);
+}
+
+/* Drawer Scrollbar */
+.drawer-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.drawer-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--hairline);
+}
+
+/* Compatibility classes so existing templates work seamlessly */
+.vento-card,
+.status-card {
+  background-color: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+  padding: 1.15rem 1.25rem;
+}
+
+.status-card:hover {
+  border-color: var(--ink-muted);
+}
+
+.status-card-title {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.status-card-number {
+  font-family: var(--font-mono);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--ink-text);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.submetric-label {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: block;
+}
+
+.submetric-val {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink-text);
+}
+
+.card-divider-line {
+  border-top: 1px solid var(--hairline);
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+}
+
+.card-col-divider {
+  border-right: 1px solid var(--hairline);
+}
+
+.section-eyebrow-title {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.vento-btn-secondary {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  color: var(--ink-text);
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-lg);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.vento-btn-secondary:hover {
+  background: var(--surface-hover);
+  border-color: var(--ink-muted);
+}
+
+.vento-btn-primary {
+  background: var(--color-zp);
+  color: var(--surface);
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-lg);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: all 0.15s ease;
+  border: 1px solid var(--color-zp);
+}
+
+.vento-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.vento-table th {
+  background: var(--surface-subtle);
+  border-bottom: 1px solid var(--hairline);
+  color: var(--ink-muted);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  padding: 0.5rem 0.75rem;
+}
+
+.vento-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--hairline-subtle);
+  font-size: 0.8125rem;
+  color: var(--ink-text);
+}
+
+.vento-table tbody tr:hover td {
+  background: var(--surface-hover);
+}
+
+.district-inspector-card {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.875rem;
+}
+
+/* Page Zoom & Fit Width Utilities */
+html, body {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+#main-app-container {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+#main-app-container.container-boxed {
+  max-width: 1600px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+#floating-zoom-widget {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#floating-zoom-widget:hover {
+  transform: translateY(-1px);
+}
+
+body.theme-dark #floating-zoom-widget {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+/* Slide-Out Navigation Drawer Overlay */
+#app-drawer {
+  z-index: 60 !important;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+body.theme-dark #app-drawer {
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
+}
+
+#drawer-backdrop {
+  z-index: 55 !important;
+}
+
+/* ==========================================================================
+   Modern Underline Tab Bar (Active Bar Below When Switched)
+   ========================================================================== */
+#zone-tab-buttons {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 0;
+  margin-top: 0.25rem;
+}
+
+.zone-tab-btn {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 3px solid transparent !important;
+  color: var(--muted) !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 0.85rem 0.625rem !important;
+  margin-bottom: -2px !important;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  border-radius: 4px 4px 0 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.zone-tab-btn:hover {
+  color: var(--ink) !important;
+  border-bottom-color: var(--line) !important;
+  background: var(--surface-hover) !important;
+}
+
+.zone-tab-btn:focus,
+.zone-tab-btn:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.zone-tab-btn.zone-tab-active,
+.zone-tab-btn.pill-filter-btn-active {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 3px solid var(--primary) !important;
+  color: var(--primary) !important;
+  font-weight: 800 !important;
+  border-radius: 0 !important;
+}
+
+/* Sub-Tab Navigation Bar (ZP & BP Subtabs) */
+.subtab-bar-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 0;
+}
+
+.subtab-bar-btn {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 3px solid transparent !important;
+  color: var(--muted) !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 0.85rem 0.625rem !important;
+  margin-bottom: -2px !important;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  border-radius: 4px 4px 0 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.subtab-bar-btn:hover {
+  color: var(--ink) !important;
+  border-bottom-color: var(--line) !important;
+  background: var(--surface-hover) !important;
+}
+
+.subtab-bar-btn:focus,
+.subtab-bar-btn:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.subtab-bar-btn.subtab-bar-btn-active,
+.subtab-bar-btn.pill-filter-btn-active {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 3px solid var(--primary) !important;
+  color: var(--primary) !important;
+  font-weight: 800 !important;
+  border-radius: 0 !important;
+}
+
+[data-bp-tab].subtab-bar-btn.subtab-bar-btn-active,
+[data-bp-tab].subtab-bar-btn.pill-filter-btn-active {
+  border-bottom-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+/* ==========================================================================
+   CANDIDATE DOSSIER MODAL STYLING (THEMED, OPAQUE, HIGH ELEVATION)
+   ========================================================================== */
+.modal-overlay {
+  background-color: color-mix(in srgb, var(--ink) 65%, transparent) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9999 !important;
+}
+
+.modal-card {
+  background-color: var(--surface) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--line) !important;
+  position: relative;
+  z-index: 10000 !important;
+}
+
+.modal-info-box {
+  background-color: color-mix(in srgb, var(--ink) 3%, var(--surface)) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 6px !important;
+}
+
+.badge-missing {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--alert);
+  background-color: var(--alert-soft);
+  border: 1px solid var(--alert);
+  border-radius: 4px;
+}
+
+.badge-incomplete {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--accent);
+  background-color: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+}
+
