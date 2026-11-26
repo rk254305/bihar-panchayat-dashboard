@@ -224,24 +224,24 @@
             class="drawer-sublink w-full text-rose-700 hover:bg-rose-50/60">
             <i data-lucide="phone-off" class="w-3.5 h-3.5 text-rose-500"></i>
             <span class="truncate">Missing Contacts</span>
-            <span
-              class="ml-auto text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-700">228</span>
+            <span id="drawer-audit-phone"
+              class="ml-auto text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-700">—</span>
           </button>
 
           <button onclick="filterZpByMissing('any'); closeMobileDrawer()"
             class="drawer-sublink w-full text-amber-700 hover:bg-amber-50/60">
             <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-500"></i>
             <span class="truncate">Incomplete Records</span>
-            <span
-              class="ml-auto text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-700">641</span>
+            <span id="drawer-audit-incomplete"
+              class="ml-auto text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-700">—</span>
           </button>
 
           <button onclick="navigateFromDrawer('zp', 'zp-district-wise'); setZpDistrictGapFilter(true)"
             class="drawer-sublink w-full text-rose-700 hover:bg-rose-50/60">
             <i data-lucide="alert-octagon" class="w-3.5 h-3.5 text-rose-500"></i>
             <span class="truncate">GAP 1 Zero-Seats</span>
-            <span
-              class="ml-auto text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-700">40</span>
+            <span id="drawer-audit-gap1"
+              class="ml-auto text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-700">—</span>
           </button>
         </div>
 
@@ -481,27 +481,27 @@
                 <div class="flex items-center justify-between mb-1.5">
                   <span class="font-mono text-xs font-bold uppercase tracking-wider text-[var(--color-zp)] flex items-center gap-1.5">
                     <span class="w-2.5 h-2.5 rounded-[2px] bg-[var(--color-zp)]"></span>
-                    Zila Parishad (ZP) • 1,160 Seats
+                    <span id="hero-zp-seats-meta">Zila Parishad (ZP) • 1,160 Seats</span>
                   </span>
-                  <span class="font-sans text-xs font-medium text-[var(--muted)]">
-                    96.6% Seats Covered
+                  <span class="font-sans text-xs font-medium text-[var(--muted)]" id="hero-zp-seat1-top">
+                    —% Seats Covered
                   </span>
                 </div>
 
                 <div class="flex items-baseline gap-2.5 my-1.5">
-                  <h3 class="font-display text-5xl sm:text-6xl font-extrabold tracking-tight text-[var(--color-zp)]" id="hero-zp-identified">3,269</h3>
-                  <span class="text-xs font-mono text-[var(--ink-muted)]">Candidates Identified (of 5,800 Target)</span>
+                  <h3 class="font-display text-5xl sm:text-6xl font-extrabold tracking-tight text-[var(--color-zp)]" id="hero-zp-identified">—</h3>
+                  <span class="text-xs font-mono text-[var(--ink-muted)]" id="hero-zp-target-label">Candidates Identified (of 5,800 Target)</span>
                 </div>
 
                 <!-- Hatched Progress Bar -->
                 <div class="my-2.5">
                   <div class="flex items-center justify-between text-[11px] font-mono text-[var(--ink-muted)] mb-1">
-                    <span>5x Target: <strong class="text-[var(--ink-text)]" id="hero-zp-coverage-pct">56.4% Done</strong></span>
-                    <span class="text-[var(--color-alert)] font-bold">Remaining Gap: <strong id="hero-zp-gap">2,531</strong></span>
+                    <span>5x Target: <strong class="text-[var(--ink-text)]" id="hero-zp-coverage-pct">—% Done</strong></span>
+                    <span class="text-[var(--color-alert)] font-bold">Remaining Gap: <strong id="hero-zp-gap">—</strong></span>
                   </div>
                   <div class="gap-progress-bar h-3.5">
-                    <div class="gap-progress-filled-zp" style="width: 56.4%"></div>
-                    <div class="gap-progress-remaining" style="width: 43.6%" title="43.6% Remaining to 5x Goal"></div>
+                    <div class="gap-progress-filled-zp" id="hero-zp-bar-filled" style="width: 0%"></div>
+                    <div class="gap-progress-remaining" id="hero-zp-bar-remaining" style="width: 100%" title="Remaining to 5x Goal"></div>
                   </div>
                 </div>
               </div>
@@ -511,12 +511,12 @@
                 <div class="flex items-center gap-4 text-xs font-mono">
                   <div>
                     <span class="submetric-label">Covered Seats (≥1)</span>
-                    <strong class="text-[var(--color-zp)] text-base sm:text-lg" id="hero-zp-seat1">1,120</strong>
-                    <span class="text-[10px] text-[var(--ink-muted)]" id="hero-zp-seat1-pct">(96.6%)</span>
+                    <strong class="text-[var(--color-zp)] text-base sm:text-lg" id="hero-zp-seat1">—</strong>
+                    <span class="text-[10px] text-[var(--ink-muted)]" id="hero-zp-seat1-pct">(—%)</span>
                   </div>
                   <div>
                     <span class="submetric-label">Zero-Seats (GAP 1)</span>
-                    <strong class="text-[var(--color-alert)] text-base sm:text-lg">40</strong>
+                    <strong class="text-[var(--color-alert)] text-base sm:text-lg" id="hero-zp-gap1">—</strong>
                     <span class="text-[10px] text-[var(--color-alert)]">Pending</span>
                   </div>
                 </div>
@@ -532,27 +532,27 @@
                 <div class="flex items-center justify-between mb-1.5">
                   <span class="font-mono text-xs font-bold uppercase tracking-wider text-[var(--color-bp)] flex items-center gap-1.5">
                     <span class="w-2.5 h-2.5 rounded-[2px] bg-[var(--color-bp)]"></span>
-                    Block Pramukh (BP) • 534 Blocks
+                    <span id="hero-bp-blocks-meta">Block Pramukh (BP) • 534 Blocks</span>
                   </span>
-                  <span class="font-sans text-xs font-medium text-[var(--muted)]">
-                    98.7% Blocks Active
+                  <span class="font-sans text-xs font-medium text-[var(--muted)]" id="hero-bp-active-top">
+                    —% Blocks Active
                   </span>
                 </div>
 
                 <div class="flex items-baseline gap-2.5 my-1.5">
-                  <h3 class="font-display text-5xl sm:text-6xl font-extrabold tracking-tight text-[var(--color-bp)]" id="hero-bp-identified">527</h3>
-                  <span class="text-xs font-mono text-[var(--ink-muted)]">Pramukhs Identified (of 1,602 Target)</span>
+                  <h3 class="font-display text-5xl sm:text-6xl font-extrabold tracking-tight text-[var(--color-bp)]" id="hero-bp-identified">—</h3>
+                  <span class="text-xs font-mono text-[var(--ink-muted)]" id="hero-bp-target-label">Pramukhs Identified (of 1,602 Target)</span>
                 </div>
 
                 <!-- Hatched Progress Bar -->
                 <div class="my-2.5">
                   <div class="flex items-center justify-between text-[11px] font-mono text-[var(--ink-muted)] mb-1">
-                    <span>3x Target: <strong class="text-[var(--ink-text)]" id="hero-bp-coverage-pct">32.9% Done</strong></span>
-                    <span class="text-[var(--color-bp)] font-bold">Remaining Gap: <strong id="hero-bp-gap">1,075</strong></span>
+                    <span>3x Target: <strong class="text-[var(--ink-text)]" id="hero-bp-coverage-pct">—% Done</strong></span>
+                    <span class="text-[var(--color-bp)] font-bold">Remaining Gap: <strong id="hero-bp-gap">—</strong></span>
                   </div>
                   <div class="gap-progress-bar h-3.5">
-                    <div class="gap-progress-filled-bp" style="width: 32.9%"></div>
-                    <div class="gap-progress-remaining" style="width: 67.1%" title="67.1% Remaining to 3x Multiplier"></div>
+                    <div class="gap-progress-filled-bp" id="hero-bp-bar-filled" style="width: 0%"></div>
+                    <div class="gap-progress-remaining" id="hero-bp-bar-remaining" style="width: 100%" title="Remaining to 3x Multiplier"></div>
                   </div>
                 </div>
               </div>
@@ -561,13 +561,13 @@
               <div class="card-divider-line pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <div class="flex items-center gap-4 text-xs font-mono">
                   <div>
-                    <span class="submetric-label">Active Blocks</span>
-                    <strong class="text-[var(--ink-text)] text-base sm:text-lg" id="hero-bp-blocks">534</strong>
-                    <span class="text-[10px] text-[var(--color-positive)]">(98.7%)</span>
+                    <span class="submetric-label">Active Blocks (≥1)</span>
+                    <strong class="text-[var(--ink-text)] text-base sm:text-lg" id="hero-bp-blocks">—</strong>
+                    <span class="text-[10px] text-[var(--color-positive)]" id="hero-bp-blocks-pct">(—%)</span>
                   </div>
                   <div>
                     <span class="submetric-label">Remaining to 3x</span>
-                    <strong class="text-[var(--color-bp)] text-base sm:text-lg">1,075</strong>
+                    <strong class="text-[var(--color-bp)] text-base sm:text-lg" id="hero-bp-gap-sub">—</strong>
                     <span class="text-[10px] text-[var(--ink-muted)]">Formula Gap</span>
                   </div>
                 </div>
@@ -1150,14 +1150,14 @@
               <div class="editorial-card p-4 flex flex-col justify-between">
                 <div class="flex items-center justify-between">
                   <span class="font-sans text-xs font-bold text-[var(--ink)] uppercase tracking-wide">ZP Target Fulfillment</span>
-                  <span class="font-mono text-xs text-[var(--primary)] font-bold">56.4% Achieved</span>
+                  <span class="font-mono text-xs text-[var(--primary)] font-bold" id="hero-zp-donut-achieved">—% Achieved</span>
                 </div>
 
                 <div class="my-auto py-2 text-center">
                   <div class="w-28 h-28 mx-auto relative">
                     <canvas id="chart-hero-zp-donut"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span class="font-mono text-xl font-bold text-[var(--ink)]">56%</span>
+                      <span class="font-mono text-xl font-bold text-[var(--ink)]" id="hero-zp-donut-pct">—%</span>
                       <span class="font-sans text-[11px] font-semibold text-[var(--muted)] uppercase">Coverage</span>
                     </div>
                   </div>
@@ -1166,11 +1166,11 @@
                 <div class="pt-2.5 border-t border-[var(--line)] flex items-center justify-between text-xs font-sans">
                   <div>
                     <span class="text-[var(--muted)] block text-[11px] uppercase">Youth (Yuva)</span>
-                    <strong class="font-mono text-sm font-bold text-[var(--accent)]" id="hero-zp-yuva">1,050</strong>
+                    <strong class="font-mono text-sm font-bold text-[var(--accent)]" id="hero-zp-yuva">—</strong>
                   </div>
                   <div class="text-right">
                     <span class="text-[var(--muted)] block text-[11px] uppercase">Women (Female)</span>
-                    <strong class="font-mono text-sm font-bold text-[var(--primary)]" id="hero-zp-female">607</strong>
+                    <strong class="font-mono text-sm font-bold text-[var(--primary)]" id="hero-zp-female">—</strong>
                   </div>
                 </div>
               </div>
@@ -1179,14 +1179,14 @@
               <div class="editorial-card p-4 flex flex-col justify-between">
                 <div class="flex items-center justify-between">
                   <span class="font-sans text-xs font-bold text-[var(--ink)] uppercase tracking-wide">BP Target Fulfillment</span>
-                  <span class="font-mono text-xs text-[var(--accent)] font-bold">32.9% Achieved</span>
+                  <span class="font-mono text-xs text-[var(--accent)] font-bold" id="hero-bp-donut-achieved">—% Achieved</span>
                 </div>
 
                 <div class="my-auto py-2 text-center">
                   <div class="w-28 h-28 mx-auto relative">
                     <canvas id="chart-hero-bp-donut"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span class="font-mono text-xl font-bold text-[var(--ink)]">33%</span>
+                      <span class="font-mono text-xl font-bold text-[var(--ink)]" id="hero-bp-donut-pct">—%</span>
                       <span class="font-sans text-[11px] font-semibold text-[var(--muted)] uppercase">BP Coverage</span>
                     </div>
                   </div>
@@ -1195,11 +1195,11 @@
                 <div class="pt-2.5 border-t border-[var(--line)] flex items-center justify-between text-xs font-sans">
                   <div>
                     <span class="text-[var(--muted)] block text-[11px] uppercase">Youth (Yuva)</span>
-                    <strong class="font-mono text-sm font-bold text-[var(--accent)]" id="hero-bp-yuva-sub">144</strong>
+                    <strong class="font-mono text-sm font-bold text-[var(--accent)]" id="hero-bp-yuva-sub">—</strong>
                   </div>
                   <div class="text-right">
                     <span class="text-[var(--muted)] block text-[11px] uppercase">Women (Female)</span>
-                    <strong class="font-mono text-sm font-bold text-[var(--accent)]" id="hero-bp-female-sub">40</strong>
+                    <strong class="font-mono text-sm font-bold text-[var(--accent)]" id="hero-bp-female-sub">—</strong>
                   </div>
                 </div>
               </div>
@@ -1234,13 +1234,13 @@
                   <div class="flex-1 space-y-0.5">
                     <div class="flex items-center justify-between">
                       <span class="tag-p0">P0 CRITICAL</span>
-                      <span class="font-mono text-[10px] text-[var(--color-alert)] font-bold">40 Seats</span>
+                      <span class="font-mono text-[10px] text-[var(--color-alert)] font-bold" id="action-p0-badge">— Seats</span>
                     </div>
-                    <p class="text-xs text-[var(--ink-text)] leading-snug">
-                      <strong>40 ZP seats have zero candidates</strong>: Purnia (12), Katihar (10), Patna Gramin (6), Khagaria (4), Madhepura (3), Araria (3).
+                    <p class="text-xs text-[var(--ink-text)] leading-snug" id="action-p0-text">
+                      Loading zero-candidate seat gaps from sheet...
                     </p>
-                    <span class="text-[10px] font-mono text-[var(--color-alert)] font-semibold flex items-center gap-1 pt-0.5">
-                      Inspect 40 Zero-Seats →
+                    <span class="text-[10px] font-mono text-[var(--color-alert)] font-semibold flex items-center gap-1 pt-0.5" id="action-p0-link">
+                      Inspect Zero-Seats →
                     </span>
                   </div>
                 </div>
@@ -1251,10 +1251,10 @@
                   <div class="flex-1 space-y-0.5">
                     <div class="flex items-center justify-between">
                       <span class="tag-p1">P1 GAP</span>
-                      <span class="font-mono text-[10px] text-[var(--color-bp)] font-bold">1,075 Needed</span>
+                      <span class="font-mono text-[10px] text-[var(--color-bp)] font-bold" id="action-p1-badge">— Needed</span>
                     </div>
-                    <p class="text-xs text-[var(--ink-text)] leading-snug">
-                      <strong>1,075 Block Pramukh candidates pending</strong> to satisfy 3x multiplier across 534 blocks (527 identified of 1,602 target).
+                    <p class="text-xs text-[var(--ink-text)] leading-snug" id="action-p1-text">
+                      Loading Block Pramukh pipeline gap...
                     </p>
                     <span class="text-[10px] font-mono text-[var(--color-bp)] font-semibold flex items-center gap-1 pt-0.5">
                       Open BP Multiplier Pipeline →
@@ -1268,10 +1268,10 @@
                   <div class="flex-1 space-y-0.5">
                     <div class="flex items-center justify-between">
                       <span class="tag-p2">P2 AUDIT</span>
-                      <span class="font-mono text-[10px] text-[var(--color-zp)] font-bold">213 Records</span>
+                      <span class="font-mono text-[10px] text-[var(--color-zp)] font-bold" id="action-p2-badge">— Records</span>
                     </div>
-                    <p class="text-xs text-[var(--ink-text)] leading-snug">
-                      <strong>213 candidate records lack valid contact phone numbers</strong>; 96 records lack recorded gender data.
+                    <p class="text-xs text-[var(--ink-text)] leading-snug" id="action-p2-text">
+                      Auditing candidate contact & gender completeness...
                     </p>
                     <span class="text-[10px] font-mono text-[var(--color-zp)] font-semibold flex items-center gap-1 pt-0.5">
                       Review Incomplete Records →
@@ -1285,10 +1285,10 @@
                   <div class="flex-1 space-y-0.5">
                     <div class="flex items-center justify-between">
                       <span class="font-mono text-[10px] font-bold text-[var(--color-positive)] uppercase">P3 HEALTH</span>
-                      <span class="font-mono text-[10px] text-[var(--color-positive)] font-bold">80% Velocity</span>
+                      <span class="font-mono text-[10px] text-[var(--color-positive)] font-bold" id="action-p3-badge">—% Velocity</span>
                     </div>
-                    <p class="text-xs text-[var(--ink-text)] leading-snug">
-                      <strong>Magadh (80%) and Sahabad (72%)</strong> exceed target pace; Seemanchal and Patna require field coordination.
+                    <p class="text-xs text-[var(--ink-text)] leading-snug" id="action-p3-text">
+                      Calculating top & lagging zone velocity...
                     </p>
                     <span class="text-[10px] font-mono text-[var(--color-positive)] font-semibold flex items-center gap-1 pt-0.5">
                       View Zone Profiles →
@@ -1313,57 +1313,8 @@
                 <span class="font-sans text-xs font-bold text-[var(--muted)] block uppercase tracking-wider">Top Zone Pace</span>
                 <span class="font-sans text-[11px] text-[var(--muted)]">Target: 65%</span>
               </div>
-              <div class="space-y-3 text-xs font-sans">
-                <!-- Magadh Zone: 80% (On Target -> --primary) -->
-                <div>
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="font-medium text-[var(--ink)]">Magadh Zone</span>
-                    <span class="font-mono font-bold text-[var(--primary)]">80%</span>
-                  </div>
-                  <div class="relative w-full bg-[var(--surface-subtle)] border border-[var(--line)] rounded-[2px] h-2 overflow-visible">
-                    <div class="h-full rounded-[1px]" style="width: 80%; background-color: var(--primary);"></div>
-                    <span class="absolute -top-1 -bottom-1 w-[2px] bg-[var(--ink)] z-10" style="left: 65%;" title="Target Pace: 65%"></span>
-                  </div>
-                </div>
-
-                <!-- Sahabad Zone: 72% (On Target -> --primary) -->
-                <div>
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="font-medium text-[var(--ink)]">Sahabad Zone</span>
-                    <span class="font-mono font-bold text-[var(--primary)]">72%</span>
-                  </div>
-                  <div class="relative w-full bg-[var(--surface-subtle)] border border-[var(--line)] rounded-[2px] h-2 overflow-visible">
-                    <div class="h-full rounded-[1px]" style="width: 72%; background-color: var(--primary);"></div>
-                    <span class="absolute -top-1 -bottom-1 w-[2px] bg-[var(--ink)] z-10" style="left: 65%;" title="Target Pace: 65%"></span>
-                  </div>
-                </div>
-
-                <!-- Champaran Zone: 69% (On Target -> --primary) -->
-                <div>
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="font-medium text-[var(--ink)]">Champaran Zone</span>
-                    <span class="font-mono font-bold text-[var(--primary)]">69%</span>
-                  </div>
-                  <div class="relative w-full bg-[var(--surface-subtle)] border border-[var(--line)] rounded-[2px] h-2 overflow-visible">
-                    <div class="h-full rounded-[1px]" style="width: 69%; background-color: var(--primary);"></div>
-                    <span class="absolute -top-1 -bottom-1 w-[2px] bg-[var(--ink)] z-10" style="left: 65%;" title="Target Pace: 65%"></span>
-                  </div>
-                </div>
-
-                <!-- Mithilanchal Zone: 64% (Behind Target 65% -> --alert) -->
-                <div>
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="font-medium text-[var(--ink)] flex items-center gap-1.5">
-                      <span>Mithilanchal Zone</span>
-                      <span class="text-[10px] text-[var(--alert)] font-semibold">(Behind Target)</span>
-                    </span>
-                    <span class="font-mono font-bold text-[var(--alert)]">64%</span>
-                  </div>
-                  <div class="relative w-full bg-[var(--surface-subtle)] border border-[var(--line)] rounded-[2px] h-2 overflow-visible">
-                    <div class="h-full rounded-[1px]" style="width: 64%; background-color: var(--alert);"></div>
-                    <span class="absolute -top-1 -bottom-1 w-[2px] bg-[var(--ink)] z-10" style="left: 65%;" title="Target Pace: 65%"></span>
-                  </div>
-                </div>
+              <div id="hero-top-zones-list" class="space-y-3 text-xs font-sans">
+                <div class="text-xs text-[var(--muted)]">Loading zone velocity...</div>
               </div>
             </div>
 
@@ -1611,16 +1562,15 @@
                 <div class="space-y-3 text-xs">
                   <div class="p-3 rounded-2xl bg-[var(--surface)] border border-[var(--line)] flex items-center justify-between">
                     <span class="text-[var(--ink)] font-sans">Minority Representation</span>
-                    <strong class="text-[var(--primary)] text-sm font-mono" id="zp-bif-minority">275 (<span
-                        id="zp-bif-minority-pct">8.4%</span>)</strong>
+                    <strong class="text-[var(--primary)] text-sm font-mono" id="zp-bif-summary-minority">—</strong>
                   </div>
                   <div class="p-3 rounded-2xl bg-[var(--surface)] border border-[var(--line)] flex items-center justify-between">
                     <span class="text-[var(--ink)] font-sans">Youth Engagement</span>
-                    <strong class="text-[var(--accent)] text-sm font-mono">1,050 (32.1%)</strong>
+                    <strong class="text-[var(--accent)] text-sm font-mono" id="zp-bif-summary-yuva">—</strong>
                   </div>
                   <div class="p-3 rounded-2xl bg-[var(--surface)] border border-[var(--line)] flex items-center justify-between">
                     <span class="text-[var(--ink)] font-sans">Mahila Candidates</span>
-                    <strong class="text-[var(--alert)] text-sm font-mono">607 (18.6%)</strong>
+                    <strong class="text-[var(--alert)] text-sm font-mono" id="zp-bif-summary-female">—</strong>
                   </div>
                 </div>
               </div>
@@ -1854,8 +1804,8 @@
                 </div>
               </div>
               <div class="border-t border-slate-100 pt-2 flex items-center justify-between text-xs">
-                <span class="text-slate-500 font-semibold">534 Blocks</span>
-                <span class="text-blue-700 font-bold">59.4% Covered</span>
+                <span class="text-slate-500 font-semibold" id="bp-bif-blocks">534 Blocks</span>
+                <span class="text-blue-700 font-bold" id="bp-bif-covered-pct">—% Covered</span>
               </div>
             </div>
 

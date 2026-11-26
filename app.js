@@ -753,7 +753,7 @@ function isFemaleCandidate(c) {
 // ==========================================================================
 // INDIVIDUAL DEMOGRAPHIC REPORT GENERATORS (SEPARATE ZP & BP)
 // ==========================================================================
-function generateFemaleReport(tier) {
+async function generateFemaleReport(tier) {
   if (tier === 'zp') {
     switchMainTab('zp');
     switchZpTab('zp-candidates');
@@ -771,8 +771,8 @@ function generateFemaleReport(tier) {
     if (genderSel) genderSel.value = 'Female';
     updateZpDemographicPills();
     setZpMissingFilter('all');
-    renderZpCandidates();
-    showToast('Generated Individual Report: 607 Female Candidates in Zila Parishad', 'success');
+    const count = await renderZpCandidates();
+    showToast(`Generated Individual Report: ${(count || 0).toLocaleString()} Female Candidates in Zila Parishad`, 'success');
   } else if (tier === 'bp') {
     switchMainTab('bp');
     switchBpTab('bp-candidates');
@@ -790,12 +790,12 @@ function generateFemaleReport(tier) {
     if (genderSel) genderSel.value = 'Female';
     updateBpDemographicPills();
     setBpMissingFilter('all');
-    renderBpCandidates();
-    showToast('Generated Individual Report: 40 Female Pramukhs in Block Pramukh', 'success');
+    const count = await renderBpCandidates();
+    showToast(`Generated Individual Report: ${(count || 0).toLocaleString()} Female Pramukhs in Block Pramukh`, 'success');
   }
 }
 
-function generateMinorityReport(tier) {
+async function generateMinorityReport(tier) {
   if (tier === 'zp') {
     switchMainTab('zp');
     switchZpTab('zp-candidates');
@@ -813,8 +813,8 @@ function generateMinorityReport(tier) {
     if (genderSel) genderSel.value = 'All';
     updateZpDemographicPills();
     setZpMissingFilter('all');
-    renderZpCandidates();
-    showToast('Generated Individual Report: 275 Minority Candidates in Zila Parishad', 'success');
+    const count = await renderZpCandidates();
+    showToast(`Generated Individual Report: ${(count || 0).toLocaleString()} Minority Candidates in Zila Parishad`, 'success');
   } else if (tier === 'bp') {
     switchMainTab('bp');
     switchBpTab('bp-candidates');
@@ -832,12 +832,12 @@ function generateMinorityReport(tier) {
     if (genderSel) genderSel.value = 'All';
     updateBpDemographicPills();
     setBpMissingFilter('all');
-    renderBpCandidates();
-    showToast('Generated Individual Report: 6 Minority Pramukhs in Block Pramukh', 'success');
+    const count = await renderBpCandidates();
+    showToast(`Generated Individual Report: ${(count || 0).toLocaleString()} Minority Pramukhs in Block Pramukh`, 'success');
   }
 }
 
-function generateYouthReport(tier) {
+async function generateYouthReport(tier) {
   if (tier === 'zp') {
     switchMainTab('zp');
     switchZpTab('zp-candidates');
@@ -855,8 +855,8 @@ function generateYouthReport(tier) {
     if (genderSel) genderSel.value = 'All';
     updateZpDemographicPills();
     setZpMissingFilter('all');
-    renderZpCandidates();
-    showToast('Generated Individual Report: 1,050 Youth Candidates (Age ≤ 40) in Zila Parishad', 'success');
+    const count = await renderZpCandidates();
+    showToast(`Generated Individual Report: ${(count || 0).toLocaleString()} Youth Candidates (Age ≤ 40) in Zila Parishad`, 'success');
   } else if (tier === 'bp') {
     switchMainTab('bp');
     switchBpTab('bp-candidates');
@@ -874,8 +874,8 @@ function generateYouthReport(tier) {
     if (genderSel) genderSel.value = 'All';
     updateBpDemographicPills();
     setBpMissingFilter('all');
-    renderBpCandidates();
-    showToast('Generated Individual Report: 144 Youth Pramukhs (Age ≤ 40) in Block Pramukh', 'success');
+    const count = await renderBpCandidates();
+    showToast(`Generated Individual Report: ${(count || 0).toLocaleString()} Youth Pramukhs (Age ≤ 40) in Block Pramukh`, 'success');
   }
 }
 
@@ -1025,10 +1025,11 @@ async function syncLiveSheetData(isManual = false) {
       state.lastSyncedTimestamp = new Date(data.lastSynced || Date.now());
       updateSyncTimeDisplay();
       populateDropdowns();
+      updateCandidateFilterPills('zp', state.zpCandidates);
+      updateCandidateFilterPills('bp', state.bpCandidates);
+      renderHeroSnapshot();
 
-      if (state.activeMainTab === 'hero') {
-        renderHeroSnapshot();
-      } else if (state.activeMainTab === 'zp') {
+      if (state.activeMainTab === 'zp') {
         switchZpTab(state.activeZpTab);
       } else if (state.activeMainTab === 'bp') {
         switchBpTab(state.activeBpTab);
@@ -1036,7 +1037,7 @@ async function syncLiveSheetData(isManual = false) {
         renderZoneDeepDive(state.selectedZoneTab);
       }
 
-      showToast(`Google Sheet synced! (${data.summary.snapshot.zp.totalIdentified} ZP & ${data.summary.snapshot.bp.totalIdentified} BP updated)`, 'success');
+      showToast(`Google Sheet synced! (${data.summary.snapshot.zp.totalIdentified.toLocaleString()} ZP & ${data.summary.snapshot.bp.totalIdentified.toLocaleString()} BP updated)`, 'success');
     }
   } catch (err) {
     console.error('Live sync error:', err);
@@ -1081,6 +1082,7 @@ async function loadZpCandidates() {
   try {
     const resp = await fetch('data/zp_candidates.json?t=' + Date.now());
     state.zpCandidates = await resp.json();
+    updateCandidateFilterPills('zp', state.zpCandidates);
   } catch (e) {
     console.error('Error loading ZP candidates:', e);
     showToast('Failed to load candidate directory', 'error');
@@ -1098,6 +1100,7 @@ async function loadBpCandidates() {
   try {
     const resp = await fetch('data/bp_candidates.json?t=' + Date.now());
     state.bpCandidates = await resp.json();
+    updateCandidateFilterPills('bp', state.bpCandidates);
   } catch (e) {
     console.error('Error loading BP candidates:', e);
     showToast('Failed to load Block Pramukh directory', 'error');
@@ -1106,6 +1109,52 @@ async function loadBpCandidates() {
     if (loader) loader.classList.add('hidden');
   }
   return state.bpCandidates;
+}
+
+function computeCandidateStats(tier, list) {
+  if (!Array.isArray(list)) return null;
+  let missingPhone = 0, missingGender = 0, missingCategory = 0, missingAny = 0;
+  let youth = 0, female = 0, minority = 0;
+  for (const c of list) {
+    const mp = !c.contact || !c.contact.trim();
+    const mg = !c.gender || !c.gender.trim();
+    const mc = tier === 'zp' ? (!c.category || !c.category.trim()) : (!c.category && !c.candidateCategory);
+    if (mp) missingPhone++;
+    if (mg) missingGender++;
+    if (mc) missingCategory++;
+    if (mp || mg || mc) missingAny++;
+    if (isYouthCandidate(c)) youth++;
+    if (isFemaleCandidate(c)) female++;
+    if (isMinorityCandidate(c)) minority++;
+  }
+  return { total: list.length, missingPhone, missingGender, missingCategory, missingAny, youth, female, minority };
+}
+
+function updateCandidateFilterPills(tier, list) {
+  const stats = computeCandidateStats(tier, list);
+  if (!stats) return;
+  const prefix = tier === 'zp' ? 'zp' : 'bp';
+  const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  setTxt(`${prefix}-filter-missing-all`, `All (${stats.total.toLocaleString()})`);
+  setTxt(`${prefix}-filter-missing-phone`, `⚠️ Missing Phone (${stats.missingPhone.toLocaleString()})`);
+  setTxt(`${prefix}-filter-missing-gender`, `⚠️ Missing Gender (${stats.missingGender.toLocaleString()})`);
+  if (tier === 'zp') {
+    setTxt('zp-filter-missing-category', `⚠️ Missing Category (${stats.missingCategory.toLocaleString()})`);
+  }
+  setTxt(`${prefix}-filter-missing-any`, `🚨 Any Incomplete (${stats.missingAny.toLocaleString()})`);
+  setTxt(`${prefix}-filter-demo-youth`, `🌱 Yuva (≤40) (${stats.youth.toLocaleString()})`);
+  setTxt(`${prefix}-filter-demo-female`, `👩 Mahila (${stats.female.toLocaleString()})`);
+  setTxt(`${prefix}-filter-demo-minority`, `✨ Minority (${stats.minority.toLocaleString()})`);
+
+  if (tier === 'zp') {
+    setTxt('drawer-audit-phone', stats.missingPhone.toLocaleString());
+    setTxt('drawer-audit-incomplete', stats.missingAny.toLocaleString());
+    setTxt('action-p2-badge', `${stats.missingPhone.toLocaleString()} Records`);
+    const p2Text = document.getElementById('action-p2-text');
+    if (p2Text) {
+      p2Text.innerHTML = `<strong>${stats.missingPhone.toLocaleString()} candidate records lack valid contact phone numbers</strong>; ${stats.missingGender.toLocaleString()} records lack recorded gender data.`;
+    }
+  }
 }
 
 // Setup Navigation & Listeners
@@ -1454,109 +1503,211 @@ function setupFilterListeners() {
 function renderHeroSnapshot() {
   if (!state.summary) return;
   const { snapshot } = state.summary;
+  const setText = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
 
   // Track 1: Zila Parishad (ZP Only)
-  const zpIdEl = document.getElementById('hero-zp-identified');
-  if (zpIdEl) zpIdEl.textContent = snapshot.zp.totalIdentified.toLocaleString();
-  const drZp = document.getElementById('drawer-zp-count');
-  if (drZp) drZp.textContent = (snapshot.zp.candidateRecordsCount || snapshot.zp.totalIdentified).toLocaleString();
-  const drBp = document.getElementById('drawer-bp-count');
-  if (drBp) drBp.textContent = snapshot.bp.totalIdentified.toLocaleString();
-  const zpCovEl = document.getElementById('hero-zp-coverage-pct');
-  if (zpCovEl) zpCovEl.textContent = `${snapshot.zp.overallCoveragePct}% Done`;
-  const zpSeat1El = document.getElementById('hero-zp-seat1');
-  if (zpSeat1El) zpSeat1El.textContent = snapshot.zp.seatsWithAtLeast1.toLocaleString();
-  const zpSeat1PctEl = document.getElementById('hero-zp-seat1-pct');
-  if (zpSeat1PctEl) zpSeat1PctEl.textContent = `(${snapshot.zp.seatsWith1Pct}%)`;
-  const zpGapEl = document.getElementById('hero-zp-gap');
-  if (zpGapEl) zpGapEl.textContent = snapshot.zp.remainingCandidates.toLocaleString();
+  const zpTotal = snapshot.zp.totalIdentified || 0;
+  const zpSeats = snapshot.zp.totalSeats || 1160;
+  const zpTarget = snapshot.zp.targetCandidates || (zpSeats * 5);
+  const zpCovPct = Number(snapshot.zp.overallCoveragePct || 0);
+  const zpRemPct = Math.max(0, round(100 - zpCovPct, 1));
+  const zpGap1 = snapshot.zp.gaps ? snapshot.zp.gaps.gap1 : Math.max(0, zpSeats - (snapshot.zp.seatsWithAtLeast1 || 0));
+
+  setText('hero-zp-seats-meta', `Zila Parishad (ZP) • ${zpSeats.toLocaleString()} Seats`);
+  setText('hero-zp-seat1-top', `${snapshot.zp.seatsWith1Pct}% Seats Covered`);
+  setText('hero-zp-identified', zpTotal.toLocaleString());
+  setText('hero-zp-target-label', `Candidates Identified (of ${zpTarget.toLocaleString()} Target)`);
+  setText('drawer-zp-count', zpTotal.toLocaleString());
+  setText('drawer-bp-count', (snapshot.bp.totalIdentified || 0).toLocaleString());
+  setText('hero-zp-coverage-pct', `${zpCovPct}% Done`);
+  setText('hero-zp-seat1', (snapshot.zp.seatsWithAtLeast1 || 0).toLocaleString());
+  setText('hero-zp-seat1-pct', `(${snapshot.zp.seatsWith1Pct}%)`);
+  setText('hero-zp-gap1', zpGap1.toLocaleString());
+  setText('drawer-audit-gap1', zpGap1.toLocaleString());
+  setText('hero-zp-gap', (snapshot.zp.remainingCandidates || 0).toLocaleString());
+  setText('hero-zp-donut-achieved', `${zpCovPct}% Achieved`);
+  setText('hero-zp-donut-pct', `${Math.round(zpCovPct)}%`);
+
+  const zpBarFilled = document.getElementById('hero-zp-bar-filled');
+  if (zpBarFilled) zpBarFilled.style.width = `${Math.min(100, zpCovPct)}%`;
+  const zpBarRem = document.getElementById('hero-zp-bar-remaining');
+  if (zpBarRem) {
+    zpBarRem.style.width = `${zpRemPct}%`;
+    zpBarRem.title = `${zpRemPct}% Remaining to 5x Goal`;
+  }
 
   // ZP Demographics (ZP Only)
   const zpMin = snapshot.zp.demographics?.minority || 0;
   const zpFem = snapshot.zp.demographics?.female || 0;
   const zpYuv = snapshot.zp.demographics?.yuva || 0;
-  const zpMinEl = document.getElementById('hero-zp-minority');
-  if (zpMinEl) zpMinEl.textContent = zpMin.toLocaleString();
-  const zpMinPctEl = document.getElementById('hero-zp-minority-pct');
-  if (zpMinPctEl && snapshot.zp.totalIdentified) zpMinPctEl.textContent = `(${round(zpMin / snapshot.zp.totalIdentified * 100)}% of ZP)`;
-  
-  const mahilaEl = document.getElementById('hero-mahila-total');
-  if (mahilaEl) mahilaEl.textContent = zpFem.toLocaleString();
-  const mahilaPctEl = document.getElementById('hero-mahila-pct');
-  if (mahilaPctEl && snapshot.zp.totalIdentified) mahilaPctEl.textContent = `(${round(zpFem / snapshot.zp.totalIdentified * 100)}% of ZP)`;
+  const zpDenom = snapshot.zp.demographics?.total || zpTotal || 1;
 
-  const yuvaEl = document.getElementById('hero-yuva-total');
-  if (yuvaEl) yuvaEl.textContent = zpYuv.toLocaleString();
-  const yuvaPctEl = document.getElementById('hero-yuva-pct');
-  if (yuvaPctEl && snapshot.zp.totalIdentified) yuvaPctEl.textContent = `(${round(zpYuv / snapshot.zp.totalIdentified * 100)}% of ZP)`;
+  setText('hero-zp-minority', zpMin.toLocaleString());
+  setText('hero-zp-minority-pct', `${round(zpMin / zpDenom * 100)}% of ${zpDenom.toLocaleString()} ZP candidates`);
+  setText('hero-mahila-total', zpFem.toLocaleString());
+  setText('hero-mahila-pct', `${round(zpFem / zpDenom * 100)}% of ${zpDenom.toLocaleString()} ZP candidates`);
+  setText('hero-yuva-total', zpYuv.toLocaleString());
+  setText('hero-yuva-pct', `(${round(zpYuv / zpDenom * 100)}%)`);
 
   // Track 2: Block Pramukh (BP Only)
-  const bpIdEl = document.getElementById('hero-bp-identified');
-  if (bpIdEl) bpIdEl.textContent = snapshot.bp.totalIdentified.toLocaleString();
-  const bpBlocksEl = document.getElementById('hero-bp-blocks');
-  if (bpBlocksEl) bpBlocksEl.textContent = snapshot.bp.totalBlocks.toLocaleString();
-  const bpCovEl = document.getElementById('hero-bp-coverage-pct');
-  if (bpCovEl) bpCovEl.textContent = `${snapshot.bp.overallCoveragePct}% Done`;
-  const bpGapEl = document.getElementById('hero-bp-gap');
-  if (bpGapEl) bpGapEl.textContent = snapshot.bp.remainingBlocks.toLocaleString();
+  const bpTotal = snapshot.bp.totalIdentified || 0;
+  const bpBlocks = snapshot.bp.totalBlocks || 534;
+  const bpTarget = snapshot.bp.targetCandidates || (bpBlocks * 3);
+  const bpActiveBlocks = snapshot.bp.blocksWithAtLeast1 || 0;
+  const bpActivePct = snapshot.bp.blocksWith1Pct !== undefined
+    ? snapshot.bp.blocksWith1Pct
+    : (bpBlocks ? round(bpActiveBlocks / bpBlocks * 100) : 0);
+  const bpCovPct = Number(snapshot.bp.overallCoveragePct || 0);
+  const bpRemPct = Math.max(0, round(100 - bpCovPct, 1));
+
+  setText('hero-bp-blocks-meta', `Block Pramukh (BP) • ${bpBlocks.toLocaleString()} Blocks`);
+  setText('hero-bp-active-top', `${bpActivePct}% Blocks Active`);
+  setText('hero-bp-identified', bpTotal.toLocaleString());
+  setText('hero-bp-target-label', `Pramukhs Identified (of ${bpTarget.toLocaleString()} Target)`);
+  setText('hero-bp-blocks', bpActiveBlocks.toLocaleString());
+  setText('hero-bp-blocks-pct', `(${bpActivePct}%)`);
+  setText('hero-bp-coverage-pct', `${bpCovPct}% Done`);
+  setText('hero-bp-gap', (snapshot.bp.remainingBlocks || 0).toLocaleString());
+  setText('hero-bp-gap-sub', (snapshot.bp.remainingBlocks || 0).toLocaleString());
+  setText('hero-bp-donut-achieved', `${bpCovPct}% Achieved`);
+  setText('hero-bp-donut-pct', `${Math.round(bpCovPct)}%`);
+
+  const bpBarFilled = document.getElementById('hero-bp-bar-filled');
+  if (bpBarFilled) bpBarFilled.style.width = `${Math.min(100, bpCovPct)}%`;
+  const bpBarRem = document.getElementById('hero-bp-bar-remaining');
+  if (bpBarRem) {
+    bpBarRem.style.width = `${bpRemPct}%`;
+    bpBarRem.title = `${bpRemPct}% Remaining to 3x Multiplier`;
+  }
 
   // BP Demographics (BP Only)
   const bpMin = snapshot.bp.demographics?.minority || 0;
   const bpFem = snapshot.bp.demographics?.female || 0;
   const bpYuv = snapshot.bp.demographics?.yuva || 0;
-  const bpMinEl = document.getElementById('hero-bp-minority');
-  if (bpMinEl) bpMinEl.textContent = bpMin.toLocaleString();
-  const bpMinPctEl = document.getElementById('hero-bp-minority-pct');
-  if (bpMinPctEl && snapshot.bp.totalIdentified) bpMinPctEl.textContent = `(${round(bpMin / snapshot.bp.totalIdentified * 100)}% of BP)`;
+  const bpDenom = snapshot.bp.demographics?.total || bpTotal || 1;
 
-  const bpFemEl = document.getElementById('hero-bp-female');
-  if (bpFemEl) bpFemEl.textContent = bpFem.toLocaleString();
-  const bpFemPctEl = document.getElementById('hero-bp-female-pct');
-  if (bpFemPctEl && snapshot.bp.totalIdentified) bpFemPctEl.textContent = `(${round(bpFem / snapshot.bp.totalIdentified * 100)}% of BP)`;
-
-  const bpYuvEl = document.getElementById('hero-bp-yuva');
-  if (bpYuvEl) bpYuvEl.textContent = bpYuv.toLocaleString();
-  const bpYuvPctEl = document.getElementById('hero-bp-yuva-pct');
-  if (bpYuvPctEl && snapshot.bp.totalIdentified) bpYuvPctEl.textContent = `(${round(bpYuv / snapshot.bp.totalIdentified * 100)}% of BP)`;
-
-  const bpFemSub = document.getElementById('hero-bp-female-sub');
-  if (bpFemSub) bpFemSub.textContent = bpFem.toLocaleString();
-  const bpYuvSub = document.getElementById('hero-bp-yuva-sub');
-  if (bpYuvSub) bpYuvSub.textContent = bpYuv.toLocaleString();
+  setText('hero-bp-minority', bpMin.toLocaleString());
+  setText('hero-bp-minority-pct', `${round(bpMin / bpDenom * 100)}% of ${bpDenom.toLocaleString()} BP pramukhs`);
+  setText('hero-bp-female', bpFem.toLocaleString());
+  setText('hero-bp-female-pct', `${round(bpFem / bpDenom * 100)}% of ${bpDenom.toLocaleString()} BP pramukhs`);
+  setText('hero-bp-yuva', bpYuv.toLocaleString());
+  setText('hero-bp-yuva-pct', `(${round(bpYuv / bpDenom * 100)}%)`);
+  setText('hero-bp-female-sub', bpFem.toLocaleString());
+  setText('hero-bp-yuva-sub', bpYuv.toLocaleString());
 
   // Progression subtitles
-  const seat1Sub = document.getElementById('hero-zp-seat1-sub');
-  if (seat1Sub) seat1Sub.textContent = snapshot.zp.seatsWithAtLeast1.toLocaleString();
-  const seat2El = document.getElementById('hero-zp-seat2');
-  if (seat2El) seat2El.textContent = snapshot.zp.seatsWith2.toLocaleString();
-  const seat3El = document.getElementById('hero-zp-seat3');
-  if (seat3El) seat3El.textContent = snapshot.zp.seatsWith3.toLocaleString();
-  const seat4El = document.getElementById('hero-zp-seat4');
-  if (seat4El) seat4El.textContent = snapshot.zp.seatsWith4.toLocaleString();
-  const seat5El = document.getElementById('hero-zp-seat5');
-  if (seat5El) seat5El.textContent = snapshot.zp.seatsWith5Plus.toLocaleString();
-  const zpYuvaEl = document.getElementById('hero-zp-yuva');
-  if (zpYuvaEl) zpYuvaEl.textContent = zpYuv.toLocaleString();
-  const zpFemaleEl = document.getElementById('hero-zp-female');
-  if (zpFemaleEl) zpFemaleEl.textContent = zpFem.toLocaleString();
+  setText('hero-zp-seat1-sub', (snapshot.zp.seatsWithAtLeast1 || 0).toLocaleString());
+  setText('hero-zp-seat2', (snapshot.zp.seatsWith2 || 0).toLocaleString());
+  setText('hero-zp-seat3', (snapshot.zp.seatsWith3 || 0).toLocaleString());
+  setText('hero-zp-seat4', (snapshot.zp.seatsWith4 || 0).toLocaleString());
+  setText('hero-zp-seat5', (snapshot.zp.seatsWith5Plus || 0).toLocaleString());
+  setText('hero-zp-yuva', zpYuv.toLocaleString());
+  setText('hero-zp-female', zpFem.toLocaleString());
 
   // Hidden compatibility tags
-  const heroCombinedEl = document.getElementById('hero-combined-total');
-  if (heroCombinedEl) heroCombinedEl.textContent = snapshot.zp.totalIdentified.toLocaleString();
-  const diverseTotalEl = document.getElementById('hero-diverse-total');
-  if (diverseTotalEl) diverseTotalEl.textContent = (zpFem + zpYuv).toLocaleString();
-  const diverseShareEl = document.getElementById('hero-diverse-share');
-  if (diverseShareEl) diverseShareEl.textContent = `${round((zpFem + zpYuv) / snapshot.zp.totalIdentified * 100)}%`;
-  const minorityTotalEl = document.getElementById('hero-minority-total');
-  if (minorityTotalEl) minorityTotalEl.textContent = zpMin.toLocaleString();
-  const minShareEl = document.getElementById('hero-minority-share');
-  if (minShareEl) minShareEl.textContent = `${round(zpMin / snapshot.zp.totalIdentified * 100)}%`;
+  setText('hero-combined-total', zpTotal.toLocaleString());
+  setText('hero-diverse-total', (zpFem + zpYuv).toLocaleString());
+  setText('hero-diverse-share', `${round((zpFem + zpYuv) / zpDenom * 100)}%`);
+  setText('hero-minority-total', zpMin.toLocaleString());
+  setText('hero-minority-share', `${round(zpMin / zpDenom * 100)}%`);
 
+  // Sidebar / Action P2 audit fallback from snapshot if directory not loaded yet
+  if (state.zpCandidates) {
+    updateCandidateFilterPills('zp', state.zpCandidates);
+  } else if (snapshot.zp.audit) {
+    setText('drawer-audit-phone', (snapshot.zp.audit.missingPhone || 0).toLocaleString());
+    setText('drawer-audit-incomplete', (snapshot.zp.audit.missingAny || 0).toLocaleString());
+    setText('action-p2-badge', `${(snapshot.zp.audit.missingPhone || 0).toLocaleString()} Records`);
+    const p2Text = document.getElementById('action-p2-text');
+    if (p2Text) {
+      p2Text.innerHTML = `<strong>${(snapshot.zp.audit.missingPhone || 0).toLocaleString()} candidate records lack valid contact phone numbers</strong>; ${(snapshot.zp.audit.missingGender || 0).toLocaleString()} records lack recorded gender data.`;
+    }
+  }
+
+  renderHeroActionItems();
+  renderHeroTopZonePace();
   renderHeroComparisonChart();
   renderHeroDonuts();
   renderHeroProgressionChart();
   renderHeroKeyDistricts();
   renderHeroMapStats();
+}
+
+function renderHeroActionItems() {
+  if (!state.summary) return;
+  const { snapshot, zp } = state.summary;
+
+  // P0: Zero-candidate seats
+  const gap1 = snapshot.zp.gaps ? snapshot.zp.gaps.gap1 : Math.max(0, (snapshot.zp.totalSeats || 0) - (snapshot.zp.seatsWithAtLeast1 || 0));
+  const gapDistricts = (zp.districtWise || [])
+    .filter(d => d.gap1 > 0)
+    .sort((a, b) => b.gap1 - a.gap1)
+    .slice(0, 6)
+    .map(d => `${d.district} (${d.gap1})`)
+    .join(', ');
+  const p0Badge = document.getElementById('action-p0-badge');
+  const p0Text = document.getElementById('action-p0-text');
+  const p0Link = document.getElementById('action-p0-link');
+  if (p0Badge) p0Badge.textContent = `${gap1.toLocaleString()} Seats`;
+  if (p0Text) {
+    p0Text.innerHTML = gapDistricts
+      ? `<strong>${gap1.toLocaleString()} ZP seats have zero candidates</strong>: ${gapDistricts}.`
+      : `<strong>${gap1.toLocaleString()} ZP seats have zero candidates</strong>.`;
+  }
+  if (p0Link) p0Link.textContent = `Inspect ${gap1.toLocaleString()} Zero-Seats →`;
+
+  // P1: BP Multiplier Gap
+  const bpRem = snapshot.bp.remainingBlocks || 0;
+  const p1Badge = document.getElementById('action-p1-badge');
+  const p1Text = document.getElementById('action-p1-text');
+  if (p1Badge) p1Badge.textContent = `${bpRem.toLocaleString()} Needed`;
+  if (p1Text) {
+    p1Text.innerHTML = `<strong>${bpRem.toLocaleString()} Block Pramukh candidates pending</strong> to satisfy 3x multiplier across ${(snapshot.bp.totalBlocks || 534).toLocaleString()} blocks (${(snapshot.bp.totalIdentified || 0).toLocaleString()} identified of ${(snapshot.bp.targetCandidates || 1602).toLocaleString()} target).`;
+  }
+
+  // P3: Top & lagging zone velocity
+  const zonesSorted = [...(zp.progressByZone || [])].sort((a, b) => (parseFloat(b.coveragePct) || 0) - (parseFloat(a.coveragePct) || 0));
+  if (zonesSorted.length >= 2) {
+    const top1 = zonesSorted[0];
+    const top2 = zonesSorted[1];
+    const lag1 = zonesSorted[zonesSorted.length - 1];
+    const lag2 = zonesSorted[zonesSorted.length - 2];
+    const p3Badge = document.getElementById('action-p3-badge');
+    const p3Text = document.getElementById('action-p3-text');
+    if (p3Badge) p3Badge.textContent = `${top1.coveragePct} Velocity`;
+    if (p3Text) {
+      p3Text.innerHTML = `<strong>${top1.zone} (${top1.coveragePct}) and ${top2.zone} (${top2.coveragePct})</strong> lead target pace; ${lag1.zone} (${lag1.coveragePct}) and ${lag2.zone} (${lag2.coveragePct}) require field coordination.`;
+    }
+  }
+}
+
+function renderHeroTopZonePace() {
+  const container = document.getElementById('hero-top-zones-list');
+  if (!container || !state.summary) return;
+  const zonesSorted = [...(state.summary.zp.progressByZone || [])]
+    .sort((a, b) => (parseFloat(b.coveragePct) || 0) - (parseFloat(a.coveragePct) || 0))
+    .slice(0, 4);
+
+  container.innerHTML = zonesSorted.map(z => {
+    const pct = parseFloat(z.coveragePct) || 0;
+    const onTarget = pct >= 65;
+    const colorVar = onTarget ? 'var(--primary)' : 'var(--alert)';
+    return `
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <span class="font-medium text-[var(--ink)] flex items-center gap-1.5">
+            <span>${z.zone} Zone</span>
+            ${!onTarget ? '<span class="text-[10px] text-[var(--alert)] font-semibold">(Behind Target)</span>' : ''}
+          </span>
+          <span class="font-mono font-bold" style="color: ${colorVar};">${z.coveragePct}</span>
+        </div>
+        <div class="relative w-full bg-[var(--surface-subtle)] border border-[var(--line)] rounded-[2px] h-2 overflow-visible">
+          <div class="h-full rounded-[1px]" style="width: ${Math.min(100, pct)}%; background-color: ${colorVar};"></div>
+          <span class="absolute -top-1 -bottom-1 w-[2px] bg-[var(--ink)] z-10" style="left: 65%;" title="Target Pace: 65%"></span>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 // 5 Key Districts Comparison Table (Top 5 Districts compared by 5x members formula)
@@ -1755,12 +1906,13 @@ function renderHeroDonuts() {
   const { snapshot } = state.summary;
   const colors = getThemeColors();
 
-  // ZP Donut (56.4% identified, 43.6% remaining gap - ZP ONLY)
+  // ZP Donut
   const ctxZp = document.getElementById('chart-hero-zp-donut');
   if (ctxZp) {
     if (state.charts.zpDonut) state.charts.zpDonut.destroy();
     const zpIdentified = snapshot.zp.totalIdentified;
-    const zpRemaining = Math.max(0, 5800 - zpIdentified);
+    const zpTarget = snapshot.zp.targetCandidates || ((snapshot.zp.totalSeats || 1160) * 5);
+    const zpRemaining = Math.max(0, zpTarget - zpIdentified);
     state.charts.zpDonut = new Chart(ctxZp, {
       type: 'doughnut',
       data: {
@@ -1779,12 +1931,13 @@ function renderHeroDonuts() {
     });
   }
 
-  // BP Donut (32.9% identified, 67.1% remaining gap - BP ONLY, NO COMBINATION)
+  // BP Donut
   const ctxBp = document.getElementById('chart-hero-bp-donut');
   if (ctxBp) {
     if (state.charts.bpDonut) state.charts.bpDonut.destroy();
     const bpIdentified = snapshot.bp.totalIdentified;
-    const bpRemaining = Math.max(0, 1602 - bpIdentified);
+    const bpTarget = snapshot.bp.targetCandidates || ((snapshot.bp.totalBlocks || 534) * 3);
+    const bpRemaining = Math.max(0, bpTarget - bpIdentified);
     state.charts.bpDonut = new Chart(ctxBp, {
       type: 'doughnut',
       data: {
@@ -1813,9 +1966,14 @@ function renderZpDistrictWise() {
   const list = state.summary.zp.districtWise;
   const { zone, search, sortCol, sortAsc, page, pageSize } = state.zpDistrictFilter;
 
+  const btnAllDist = document.getElementById('zp-dist-filter-all');
+  if (btnAllDist) btnAllDist.textContent = `All (${list.length})`;
+  const btnGapDist = document.getElementById('zp-dist-filter-gap');
+  if (btnGapDist) btnGapDist.textContent = `🚨 GAP 1 Only (${list.filter(d => d.gap1 > 0).length})`;
+
   let filtered = list.filter(d => {
-    const matchZone = zone === 'All' || d.zone.toLowerCase() === zone.toLowerCase();
-    const matchSearch = !search || d.district.toLowerCase().includes(search) || d.zone.toLowerCase().includes(search);
+    const matchZone = zone === 'All' || (d.zone || '').toLowerCase() === zone.toLowerCase();
+    const matchSearch = !search || (d.district || '').toLowerCase().includes(search) || (d.zone || '').toLowerCase().includes(search);
     const matchGap = !state.zpDistrictFilter.gapOnly || d.gap1 > 0;
     return matchZone && matchSearch && matchGap;
   });
@@ -2036,16 +2194,24 @@ function renderZpProgressReport() {
 function renderZpBifurcation() {
   if (!state.summary) return;
   const totals = state.summary.zp.bifurcationTotals;
+  const denom = totals.total || 1;
 
   document.getElementById('zp-bif-total').textContent = totals.total.toLocaleString();
   document.getElementById('zp-bif-male').textContent = totals.male.toLocaleString();
-  document.getElementById('zp-bif-male-pct').textContent = `${round(totals.male / totals.total * 100)}%`;
+  document.getElementById('zp-bif-male-pct').textContent = `${round(totals.male / denom * 100)}%`;
   document.getElementById('zp-bif-female').textContent = totals.female.toLocaleString();
-  document.getElementById('zp-bif-female-pct').textContent = `${round(totals.female / totals.total * 100)}%`;
+  document.getElementById('zp-bif-female-pct').textContent = `${round(totals.female / denom * 100)}%`;
   document.getElementById('zp-bif-yuva').textContent = totals.yuva.toLocaleString();
-  document.getElementById('zp-bif-yuva-pct').textContent = `${round(totals.yuva / totals.total * 100)}%`;
+  document.getElementById('zp-bif-yuva-pct').textContent = `${round(totals.yuva / denom * 100)}%`;
   document.getElementById('zp-bif-minority').textContent = totals.minority.toLocaleString();
-  document.getElementById('zp-bif-minority-pct').textContent = `${round(totals.minority / totals.total * 100)}%`;
+  document.getElementById('zp-bif-minority-pct').textContent = `${round(totals.minority / denom * 100)}%`;
+
+  const sumMinEl = document.getElementById('zp-bif-summary-minority');
+  if (sumMinEl) sumMinEl.textContent = `${totals.minority.toLocaleString()} (${round(totals.minority / denom * 100)}%)`;
+  const sumYuvEl = document.getElementById('zp-bif-summary-yuva');
+  if (sumYuvEl) sumYuvEl.textContent = `${totals.yuva.toLocaleString()} (${round(totals.yuva / denom * 100)}%)`;
+  const sumFemEl = document.getElementById('zp-bif-summary-female');
+  if (sumFemEl) sumFemEl.textContent = `${totals.female.toLocaleString()} (${round(totals.female / denom * 100)}%)`;
 
   const ctx = document.getElementById('chart-zp-bifurcation');
   if (ctx) {
@@ -2091,14 +2257,15 @@ function renderZpBifurcation() {
 
 async function renderZpCandidates() {
   const candidates = await loadZpCandidates();
-  if (!candidates) return;
+  if (!candidates) return 0;
+  updateCandidateFilterPills('zp', candidates);
 
   const { zone, gender, search, missingFilter, demographicFilter, page, pageSize } = state.zpCandidateFilter;
 
   const filtered = candidates.filter(c => {
-    const matchZone = zone === 'All' || c.zone.toLowerCase() === zone.toLowerCase();
+    const matchZone = zone === 'All' || (c.zone || '').toLowerCase() === zone.toLowerCase();
     const matchGender = gender === 'All' ||
-      c.gender.toLowerCase() === gender.toLowerCase() ||
+      (c.gender || '').toLowerCase() === gender.toLowerCase() ||
       (gender.toLowerCase() === 'female' && isFemaleCandidate(c));
 
     let matchDemo = true;
@@ -2258,6 +2425,7 @@ async function renderZpCandidates() {
   if (prevBtn) prevBtn.disabled = curPage <= 1;
   if (nextBtn) nextBtn.disabled = curPage >= totalPages;
   lucide.createIcons();
+  return total;
 }
 
 function filterZpByMissing(filterType = 'phone') {
@@ -2306,10 +2474,9 @@ function renderBpDistrictWise() {
   const { zone, search, sortCol, sortAsc, page, pageSize } = state.bpDistrictFilter;
 
   let filtered = list.filter(d => {
-    const matchZone = zone === 'All' || d.zone.toLowerCase() === zone.toLowerCase();
-    const matchSearch = !search || d.district.toLowerCase().includes(search) || d.zone.toLowerCase().includes(search);
-    const matchGap = !state.zpDistrictFilter.gapOnly || d.gap1 > 0;
-    return matchZone && matchSearch && matchGap;
+    const matchZone = zone === 'All' || (d.zone || '').toLowerCase() === zone.toLowerCase();
+    const matchSearch = !search || (d.district || '').toLowerCase().includes(search) || (d.zone || '').toLowerCase().includes(search);
+    return matchZone && matchSearch;
   });
 
   filtered.sort((a, b) => {
@@ -2443,10 +2610,15 @@ function renderBpProgressReport() {
 function renderBpBifurcation() {
   if (!state.summary) return;
   const totals = state.summary.bp.bifurcationTotals;
+  const bpSnap = state.summary.snapshot?.bp || {};
   const totalBp = totals.total || 1;
 
   const totalEl = document.getElementById('bp-bif-total');
   if (totalEl) totalEl.textContent = totals.total.toLocaleString();
+  const blocksEl = document.getElementById('bp-bif-blocks');
+  if (blocksEl) blocksEl.textContent = `${(bpSnap.totalBlocks || 534).toLocaleString()} Blocks`;
+  const covEl = document.getElementById('bp-bif-covered-pct');
+  if (covEl) covEl.textContent = `${bpSnap.overallCoveragePct ?? round(totalBp / ((bpSnap.totalBlocks || 534) * 3) * 100)}% Covered`;
 
   const maleEl = document.getElementById('bp-bif-male');
   if (maleEl) maleEl.textContent = totals.male.toLocaleString();
@@ -2471,12 +2643,13 @@ function renderBpBifurcation() {
 
 async function renderBpCandidates() {
   const candidates = await loadBpCandidates();
-  if (!candidates) return;
+  if (!candidates) return 0;
+  updateCandidateFilterPills('bp', candidates);
 
   const { zone, gender, search, missingFilter, demographicFilter, page, pageSize } = state.bpCandidateFilter;
 
   const filtered = candidates.filter(c => {
-    const matchZone = zone === 'All' || c.zone.toLowerCase() === zone.toLowerCase();
+    const matchZone = zone === 'All' || (c.zone || '').toLowerCase() === zone.toLowerCase();
     const matchGender = !gender || gender === 'All' ||
       (c.gender && c.gender.toLowerCase() === gender.toLowerCase()) ||
       (gender.toLowerCase() === 'female' && isFemaleCandidate(c)) ||
@@ -2636,6 +2809,7 @@ async function renderBpCandidates() {
   if (prevBtn) prevBtn.disabled = curPage <= 1;
   if (nextBtn) nextBtn.disabled = curPage >= totalPages;
   lucide.createIcons();
+  return total;
 }
 
 function setBpMissingFilter(filterType) {
@@ -2692,9 +2866,9 @@ async function switchZoneDeepDive(zoneName) {
 async function renderZoneDeepDive(zoneName) {
   if (!state.summary) return;
 
-  const zpProgress = state.summary.zp.progressByZone.find(z => z.zone.toLowerCase() === zoneName.toLowerCase());
-  const bpProgress = state.summary.bp.progressByZone.find(b => b.zone.toLowerCase() === zoneName.toLowerCase());
-  const districts = state.summary.zp.districtWise.filter(d => d.zone.toLowerCase() === zoneName.toLowerCase());
+  const zpProgress = state.summary.zp.progressByZone.find(z => (z.zone || '').toLowerCase() === zoneName.toLowerCase());
+  const bpProgress = state.summary.bp.progressByZone.find(b => (b.zone || '').toLowerCase() === zoneName.toLowerCase());
+  const districts = state.summary.zp.districtWise.filter(d => (d.zone || '').toLowerCase() === zoneName.toLowerCase());
 
   document.getElementById('zone-title').textContent = `${zoneName} Zone Profile`;
 

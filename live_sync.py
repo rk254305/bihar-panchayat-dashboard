@@ -114,7 +114,7 @@ def process_live_data(sheets_data, persist=True):
             'coverage1Pct': round((s1 / seats * 100), 1) if seats > 0 else 0
         })
 
-    # 2. BP District-Wise
+    # 2. BP District-Wise (col 4 = Block With 0 Members; cols 5..11 = 1/2/3/Total/GAP1/GAP2/GAP3)
     bp_districts = []
     rows_bp_dw = sheets_data.get('District Wise Report BP', [])
     for r in rows_bp_dw[3:]:
@@ -123,19 +123,21 @@ def process_live_data(sheets_data, persist=True):
         if not district or district.lower() in ('district', 'total'):
             continue
         blocks = parse_num(r[3]) if len(r) > 3 else 0
-        b1 = parse_num(r[4]) if len(r) > 4 else 0
+        b0 = parse_num(r[4]) if len(r) > 4 else 0
+        b1 = parse_num(r[5]) if len(r) > 5 else 0
         bp_districts.append({
             'zone': zone,
             'mapping': clean_val(r[1]) if len(r) > 1 else '',
             'district': district,
             'blocks': blocks,
+            'blocksWith0': b0,
             'blocksWith1': b1,
-            'blocksWith2': parse_num(r[5]) if len(r) > 5 else 0,
-            'blocksWith3': parse_num(r[6]) if len(r) > 6 else 0,
-            'totalIdentified': parse_num(r[7]) if len(r) > 7 else 0,
-            'gap1': parse_num(r[8]) if len(r) > 8 else 0,
-            'gap2': parse_num(r[9]) if len(r) > 9 else 0,
-            'gap3': parse_num(r[10]) if len(r) > 10 else 0,
+            'blocksWith2': parse_num(r[6]) if len(r) > 6 else 0,
+            'blocksWith3': parse_num(r[7]) if len(r) > 7 else 0,
+            'totalIdentified': parse_num(r[8]) if len(r) > 8 else 0,
+            'gap1': parse_num(r[9]) if len(r) > 9 else 0,
+            'gap2': parse_num(r[10]) if len(r) > 10 else 0,
+            'gap3': parse_num(r[11]) if len(r) > 11 else 0,
             'coverage1Pct': round((b1 / blocks * 100), 1) if blocks > 0 else 0
         })
 
@@ -297,6 +299,19 @@ def process_live_data(sheets_data, persist=True):
             'meetingDate': clean_val(r[24]) if len(r) > 24 else ''
         })
 
+    zp_audit = {
+        'missingPhone': sum(1 for c in zp_candidates if not c['contact']),
+        'missingGender': sum(1 for c in zp_candidates if not c['gender']),
+        'missingCategory': sum(1 for c in zp_candidates if not c['category']),
+        'missingAny': sum(1 for c in zp_candidates if not c['contact'] or not c['gender'] or not c['category']),
+    }
+    bp_audit = {
+        'missingPhone': sum(1 for c in bp_candidates if not c['contact']),
+        'missingGender': sum(1 for c in bp_candidates if not c['gender']),
+        'missingCategory': sum(1 for c in bp_candidates if not c['category'] and not c['candidateCategory']),
+        'missingAny': sum(1 for c in bp_candidates if not c['contact'] or not c['gender'] or (not c['category'] and not c['candidateCategory'])),
+    }
+
     zones = sorted(list(set([d['zone'] for d in zp_districts if d['zone']])))
     now_iso = datetime.now(timezone.utc).isoformat()
 
@@ -315,8 +330,11 @@ def process_live_data(sheets_data, persist=True):
 
     total_bp_blocks = bp_snap_vals.get('totalBlocks', 534)
     bp_target = bp_snap_vals.get('target3x', total_bp_blocks * 3)
-    bp_identified = len(bp_candidates) or sum(z['identified'] for z in bp_progress_zones)
+    bp_identified = sum(z['identified'] for z in bp_progress_zones) or len(bp_candidates)
+    b0 = bp_snap_vals.get('blocks0', sum(d['blocksWith0'] for d in bp_districts))
     b1 = bp_snap_vals.get('blocks1', sum(d['blocksWith1'] for d in bp_districts))
+    b2 = bp_snap_vals.get('blocks2', sum(d['blocksWith2'] for d in bp_districts))
+    b3 = bp_snap_vals.get('blocks3', sum(d['blocksWith3'] for d in bp_districts))
 
     summary = {
         'meta': {
@@ -352,7 +370,8 @@ def process_live_data(sheets_data, persist=True):
                     'gap5': max(0, total_zp_seats - s5)
                 },
                 'demographics': zp_bifurcation_totals,
-                'candidateRecordsCount': len(zp_candidates)
+                'candidateRecordsCount': len(zp_candidates),
+                'audit': zp_audit
             },
             'bp': {
                 'title': 'Block Pramukh (BP)',
@@ -362,14 +381,19 @@ def process_live_data(sheets_data, persist=True):
                 'totalIdentified': bp_identified,
                 'remainingBlocks': max(0, bp_target - bp_identified),
                 'overallCoveragePct': round(bp_identified / bp_target * 100, 1) if bp_target else 0,
+                'blocksWith0': b0,
                 'blocksWithAtLeast1': b1,
+                'blocksWith1Pct': round(b1 / total_bp_blocks * 100, 1) if total_bp_blocks else 0,
+                'blocksWith2': b2,
+                'blocksWith3': b3,
                 'gaps': {
                     'gap1': max(0, total_bp_blocks - b1),
-                    'gap2': max(0, total_bp_blocks - bp_snap_vals.get('blocks2', sum(d['blocksWith2'] for d in bp_districts))),
-                    'gap3': max(0, total_bp_blocks - bp_snap_vals.get('blocks3', sum(d['blocksWith3'] for d in bp_districts)))
+                    'gap2': max(0, total_bp_blocks - b2),
+                    'gap3': max(0, total_bp_blocks - b3)
                 },
                 'demographics': bp_bifurcation_totals,
-                'candidateRecordsCount': len(bp_candidates)
+                'candidateRecordsCount': len(bp_candidates),
+                'audit': bp_audit
             }
         },
         'zp': {
