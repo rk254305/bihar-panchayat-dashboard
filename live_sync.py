@@ -5,7 +5,7 @@ import io
 import json
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 SHEET_ID = '1Dr5pYkkBs-nR0cYYod5yLLRChorfvsT7Lp0qtwa1xS8'
 
@@ -34,14 +34,14 @@ def clean_val(v):
     return str(v).strip().replace('\r', '')
 
 def parse_num(v, default=0):
-    if not v:
+    if v is None or v == '':
         return default
     v_clean = str(v).replace(',', '').replace('%', '').strip()
     try:
         if '.' in v_clean:
             return float(v_clean)
         return int(v_clean)
-    except:
+    except Exception:
         return default
 
 def fetch_single_sheet(name, gid):
@@ -71,12 +71,23 @@ def fetch_all_live_sheets():
     print(f"Parallel fetch of {len(results)} sheets completed in {time.time() - t0:.2f}s")
     return results
 
-def process_live_data(sheets_data):
+def _try_write_json(rel_path, payload, indent=None):
+    try:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        full_path = os.path.join(base_dir, rel_path)
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        with open(full_path, 'w', encoding='utf-8') as f:
+            json.dump(payload, f, indent=indent, ensure_ascii=False)
+    except OSError:
+        # Vercel serverless environment has a read-only filesystem outside /tmp
+        pass
+
+def process_live_data(sheets_data, persist=True):
     # 1. ZP District-Wise
     zp_districts = []
     rows_zp_dw = sheets_data.get('District Wise Report ZP', [])
     for r in rows_zp_dw[4:]:
-        zone = clean_val(r[0])
+        zone = clean_val(r[0]) if len(r) > 0 else ''
         district = clean_val(r[2]) if len(r) > 2 else ''
         if not district or district.lower() in ('district', 'total'):
             continue
@@ -106,7 +117,7 @@ def process_live_data(sheets_data):
     bp_districts = []
     rows_bp_dw = sheets_data.get('District Wise Report BP', [])
     for r in rows_bp_dw[3:]:
-        zone = clean_val(r[0])
+        zone = clean_val(r[0]) if len(r) > 0 else ''
         district = clean_val(r[2]) if len(r) > 2 else ''
         if not district or district.lower() in ('district', 'total'):
             continue
@@ -127,61 +138,89 @@ def process_live_data(sheets_data):
             'coverage1Pct': round((b1 / blocks * 100), 1) if blocks > 0 else 0
         })
 
-    # 3. ZP Progress Zones
-    zp_progress_zones = [
-        {'zone': 'Magadh', 'seats': 96, 'target5x': 480, 'identified': 385, 'remaining': 95, 'coveragePct': '80%'},
-        {'zone': 'Sahabad', 'seats': 103, 'target5x': 515, 'identified': 373, 'remaining': 142, 'coveragePct': '72%'},
-        {'zone': 'Champaran', 'seats': 98, 'target5x': 490, 'identified': 337, 'remaining': 153, 'coveragePct': '69%'},
-        {'zone': 'Saran', 'seats': 121, 'target5x': 605, 'identified': 370, 'remaining': 235, 'coveragePct': '61%'},
-        {'zone': 'Munger', 'seats': 90, 'target5x': 450, 'identified': 262, 'remaining': 188, 'coveragePct': '58%'},
-        {'zone': 'Mithilanchal', 'seats': 103, 'target5x': 515, 'identified': 283, 'remaining': 232, 'coveragePct': '55%'},
-        {'zone': 'Nalanda', 'seats': 77, 'target5x': 385, 'identified': 205, 'remaining': 180, 'coveragePct': '53%'},
-        {'zone': 'Samastipur', 'seats': 127, 'target5x': 635, 'identified': 328, 'remaining': 307, 'coveragePct': '52%'},
-        {'zone': 'Koshi', 'seats': 87, 'target5x': 435, 'identified': 218, 'remaining': 217, 'coveragePct': '50%'},
-        {'zone': 'Tirhut', 'seats': 98, 'target5x': 490, 'identified': 241, 'remaining': 249, 'coveragePct': '49%'},
-        {'zone': 'Seemanchal', 'seats': 115, 'target5x': 575, 'identified': 197, 'remaining': 378, 'coveragePct': '34%'},
-        {'zone': 'Patna', 'seats': 45, 'target5x': 225, 'identified': 70, 'remaining': 155, 'coveragePct': '31%'},
-    ]
+    # 3. Parse ZP Progress Report dynamically
+    zp_progress_zones = []
+    zp_snap_vals = {}
+    for r in sheets_data.get('Progress Report ZP', []):
+        lbl = clean_val(r[0]).lower() if len(r) > 0 else ''
+        val_c = clean_val(r[2]) if len(r) > 2 else ''
+        if lbl and val_c:
+            if 'total zp seats' in lbl: zp_snap_vals['totalSeats'] = parse_num(val_c)
+            elif lbl.startswith('1 candidate'): zp_snap_vals['seats1'] = parse_num(val_c)
+            elif lbl.startswith('2 candidate'): zp_snap_vals['seats2'] = parse_num(val_c)
+            elif lbl.startswith('3'): zp_snap_vals['seats3'] = parse_num(val_c)
+            elif lbl.startswith('4 candidate'): zp_snap_vals['seats4'] = parse_num(val_c)
+            elif lbl.startswith('5 candidate'): zp_snap_vals['seats5'] = parse_num(val_c)
+            elif 'total identified' in lbl: zp_snap_vals['totalIdentified'] = parse_num(val_c)
+        z_name = clean_val(r[3]) if len(r) > 3 else ''
+        if z_name and z_name.lower() not in ('zone', 'total', '12') and not z_name.isdigit():
+            seats_z = parse_num(r[5]) if len(r) > 5 else 0
+            tgt_z = parse_num(r[7]) if len(r) > 7 else seats_z * 5
+            id_z = parse_num(r[9]) if len(r) > 9 else 0
+            rem_z = parse_num(r[11]) if len(r) > 11 else max(0, tgt_z - id_z)
+            cov_z = clean_val(r[13]) if len(r) > 13 else (f"{round(id_z / tgt_z * 100)}%" if tgt_z else '0%')
+            if seats_z > 0:
+                zp_progress_zones.append({
+                    'zone': z_name, 'seats': seats_z, 'target5x': tgt_z,
+                    'identified': id_z, 'remaining': rem_z, 'coveragePct': cov_z
+                })
 
-    # 4. BP Progress Zones
-    bp_progress_zones = [
-        {'zone': 'Koshi', 'blocks': 41, 'target3x': 123, 'identified': 63, 'remaining': 60, 'coveragePct': '51.2%'},
-        {'zone': 'Seemanchal', 'blocks': 46, 'target3x': 138, 'identified': 65, 'remaining': 73, 'coveragePct': '47.1%'},
-        {'zone': 'Samastipur', 'blocks': 38, 'target3x': 114, 'identified': 47, 'remaining': 67, 'coveragePct': '41.2%'},
-        {'zone': 'Magadh', 'blocks': 47, 'target3x': 141, 'identified': 54, 'remaining': 87, 'coveragePct': '38.3%'},
-        {'zone': 'Nalanda', 'blocks': 47, 'target3x': 141, 'identified': 51, 'remaining': 90, 'coveragePct': '36.2%'},
-        {'zone': 'Saran', 'blocks': 53, 'target3x': 159, 'identified': 49, 'remaining': 110, 'coveragePct': '30.8%'},
-        {'zone': 'Sahabad', 'blocks': 55, 'target3x': 165, 'identified': 51, 'remaining': 114, 'coveragePct': '30.9%'},
-        {'zone': 'Tirhut', 'blocks': 54, 'target3x': 162, 'identified': 48, 'remaining': 114, 'coveragePct': '29.6%'},
-        {'zone': 'Munger', 'blocks': 46, 'target3x': 138, 'identified': 38, 'remaining': 100, 'coveragePct': '27.5%'},
-        {'zone': 'Mithilanchal', 'blocks': 39, 'target3x': 117, 'identified': 28, 'remaining': 89, 'coveragePct': '23.9%'},
-        {'zone': 'Champaran', 'blocks': 45, 'target3x': 135, 'identified': 27, 'remaining': 108, 'coveragePct': '20.0%'},
-        {'zone': 'Patna', 'blocks': 23, 'target3x': 69, 'identified': 6, 'remaining': 63, 'coveragePct': '8.7%'},
-    ]
+    # 4. Parse BP Progress Report dynamically
+    bp_progress_zones = []
+    bp_snap_vals = {}
+    for r in sheets_data.get('Progress Report BP', []):
+        lbl = clean_val(r[0]).lower() if len(r) > 0 else ''
+        val_c = clean_val(r[2]) if len(r) > 2 else ''
+        if lbl and val_c:
+            if 'total block pramukh seats' in lbl: bp_snap_vals['totalBlocks'] = parse_num(val_c)
+            elif lbl.startswith('block pramukh candidates required'): bp_snap_vals['target3x'] = parse_num(val_c)
+            elif lbl.startswith('0 candidate'): bp_snap_vals['blocks0'] = parse_num(val_c)
+            elif lbl.startswith('1 candidate'): bp_snap_vals['blocks1'] = parse_num(val_c)
+            elif lbl.startswith('2 candidate'): bp_snap_vals['blocks2'] = parse_num(val_c)
+            elif lbl.startswith('3 candidate'): bp_snap_vals['blocks3'] = parse_num(val_c)
+        z_name = clean_val(r[4]) if len(r) > 4 else ''
+        if z_name and z_name.lower() not in ('zone', 'total', '12') and not z_name.isdigit():
+            blks_z = parse_num(r[7]) if len(r) > 7 else 0
+            tgt_z = parse_num(r[9]) if len(r) > 9 else blks_z * 3
+            id_z = parse_num(r[11]) if len(r) > 11 else 0
+            rem_z = parse_num(r[13]) if len(r) > 13 else max(0, tgt_z - id_z)
+            if blks_z > 0:
+                cov_pct = f"{round((id_z / tgt_z * 100), 1)}%" if tgt_z > 0 else "0.0%"
+                bp_progress_zones.append({
+                    'zone': z_name, 'blocks': blks_z, 'target3x': tgt_z,
+                    'identified': id_z, 'remaining': rem_z, 'coveragePct': cov_pct
+                })
 
-    # 5. Bifurcation Totals
-    zp_bifurcation_totals = {
-        'total': 3269,
-        'male': 2563,
-        'female': 607,
-        'yuva': 1050,
-        'minority': 275,
-        'general': 1337
-    }
+    # 5. Dynamic Bifurcation Totals
+    zp_bifurcation_totals = {'total': 0, 'male': 0, 'female': 0, 'yuva': 0, 'minority': 0, 'general': 0}
+    for r in sheets_data.get('Bifurcation Report ZP', [])[:6]:
+        if r and clean_val(r[0]).lower() == 'total':
+            zp_bifurcation_totals = {
+                'total': parse_num(r[3]) if len(r) > 3 else 0,
+                'male': parse_num(r[4]) if len(r) > 4 else 0,
+                'female': parse_num(r[5]) if len(r) > 5 else 0,
+                'yuva': parse_num(r[6]) if len(r) > 6 else 0,
+                'minority': parse_num(r[7]) if len(r) > 7 else 0,
+                'general': parse_num(r[8]) if len(r) > 8 else 0,
+            }
+            break
 
-    bp_bifurcation_totals = {
-        'total': 527,
-        'male': 379,
-        'female': 40,
-        'yuva': 144,
-        'minority': 6,
-        'general': 337
-    }
+    bp_bifurcation_totals = {'total': 0, 'male': 0, 'female': 0, 'yuva': 0, 'minority': 0, 'general': 0}
+    for r in sheets_data.get('Bifurcation Report BP', [])[:6]:
+        if r and clean_val(r[0]).lower() == 'total':
+            bp_bifurcation_totals = {
+                'total': parse_num(r[3]) if len(r) > 3 else 0,
+                'male': parse_num(r[4]) if len(r) > 4 else 0,
+                'female': parse_num(r[5]) if len(r) > 5 else 0,
+                'yuva': parse_num(r[6]) if len(r) > 6 else 0,
+                'minority': parse_num(r[7]) if len(r) > 7 else 0,
+                'general': parse_num(r[8]) if len(r) > 8 else 0,
+            }
+            break
 
     # 6. Parse ZP Candidates
     zp_candidates = []
-    rows_zp_cand = sheets_data.get('Final Candidate List', [])
-    for idx, r in enumerate(rows_zp_cand[2:]):
+    for idx, r in enumerate(sheets_data.get('Final Candidate List', [])[2:]):
         name = clean_val(r[12]) if len(r) > 12 else ''
         if not name:
             continue
@@ -214,8 +253,7 @@ def process_live_data(sheets_data):
 
     # 7. Parse BP Candidates
     bp_candidates = []
-    rows_bp_cand = sheets_data.get('Block Pramukh', [])
-    for idx, r in enumerate(rows_bp_cand[2:]):
+    for idx, r in enumerate(sheets_data.get('Block Pramukh', [])[2:]):
         name = clean_val(r[13]) if len(r) > 13 else ''
         if not name:
             continue
@@ -248,13 +286,27 @@ def process_live_data(sheets_data):
         })
 
     zones = sorted(list(set([d['zone'] for d in zp_districts if d['zone']])))
-    now_iso = datetime.now().isoformat()
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    total_zp_seats = zp_snap_vals.get('totalSeats', 1160)
+    zp_target = total_zp_seats * 5
+    zp_identified = len(zp_candidates) or zp_snap_vals.get('totalIdentified', 3350)
+    s1 = zp_snap_vals.get('seats1', sum(d['seatsWith1'] for d in zp_districts))
+    s2 = zp_snap_vals.get('seats2', sum(d['seatsWith2'] for d in zp_districts))
+    s3 = zp_snap_vals.get('seats3', sum(d['seatsWith3'] for d in zp_districts))
+    s4 = zp_snap_vals.get('seats4', sum(d['seatsWith4'] for d in zp_districts))
+    s5 = zp_snap_vals.get('seats5', sum(d['seatsWith5'] for d in zp_districts))
+
+    total_bp_blocks = bp_snap_vals.get('totalBlocks', 534)
+    bp_target = bp_snap_vals.get('target3x', total_bp_blocks * 3)
+    bp_identified = len(bp_candidates) or sum(z['identified'] for z in bp_progress_zones)
+    b1 = bp_snap_vals.get('blocks1', sum(d['blocksWith1'] for d in bp_districts))
 
     summary = {
         'meta': {
             'title': 'Bihar Panchayat Candidate Identification Dashboard 2026',
             'subtitle': 'Executive Tracking System: Zila Parishad & Block Pramukh',
-            'reportDate': '24 November 2026',
+            'reportDate': datetime.now().strftime('%d %B %Y'),
             'lastSynced': now_iso,
             'isLiveLinked': True,
             'sourceSpreadsheetId': SHEET_ID,
@@ -264,32 +316,42 @@ def process_live_data(sheets_data):
         'snapshot': {
             'zp': {
                 'title': 'Zila Parishad (ZP)',
-                'totalSeats': 1160,
+                'totalSeats': total_zp_seats,
                 'targetMultiplier': 5,
-                'targetCandidates': 5800,
-                'totalIdentified': len(zp_candidates) if len(zp_candidates) > 0 else 3269,
-                'remainingCandidates': 5800 - (len(zp_candidates) if len(zp_candidates) > 0 else 3269),
-                'overallCoveragePct': round((len(zp_candidates) if len(zp_candidates) > 0 else 3269) / 5800 * 100, 1),
-                'seatsWithAtLeast1': 1120,
-                'seatsWith1Pct': 96.6,
-                'seatsWith2': 1031,
-                'seatsWith3': 640,
-                'seatsWith4': 297,
-                'seatsWith5Plus': 122,
-                'gaps': {'gap1': 40, 'gap2': 129, 'gap3': 520, 'gap4': 863, 'gap5': 1038},
+                'targetCandidates': zp_target,
+                'totalIdentified': zp_identified,
+                'remainingCandidates': max(0, zp_target - zp_identified),
+                'overallCoveragePct': round(zp_identified / zp_target * 100, 1) if zp_target else 0,
+                'seatsWithAtLeast1': s1,
+                'seatsWith1Pct': round(s1 / total_zp_seats * 100, 1) if total_zp_seats else 0,
+                'seatsWith2': s2,
+                'seatsWith3': s3,
+                'seatsWith4': s4,
+                'seatsWith5Plus': s5,
+                'gaps': {
+                    'gap1': max(0, total_zp_seats - s1),
+                    'gap2': max(0, total_zp_seats - s2),
+                    'gap3': max(0, total_zp_seats - s3),
+                    'gap4': max(0, total_zp_seats - s4),
+                    'gap5': max(0, total_zp_seats - s5)
+                },
                 'demographics': zp_bifurcation_totals,
                 'candidateRecordsCount': len(zp_candidates)
             },
             'bp': {
                 'title': 'Block Pramukh (BP)',
-                'totalBlocks': 534,
+                'totalBlocks': total_bp_blocks,
                 'targetMultiplier': 3,
-                'targetCandidates': 1602,
-                'totalIdentified': len(bp_candidates) if len(bp_candidates) > 0 else 527,
-                'remainingBlocks': 1602 - (len(bp_candidates) if len(bp_candidates) > 0 else 527),
-                'overallCoveragePct': round((len(bp_candidates) if len(bp_candidates) > 0 else 527) / 1602 * 100, 1),
-                'blocksWithAtLeast1': len(bp_candidates) if len(bp_candidates) > 0 else 527,
-                'gaps': {'gap1': 1075, 'gap2': 1075, 'gap3': 1075},
+                'targetCandidates': bp_target,
+                'totalIdentified': bp_identified,
+                'remainingBlocks': max(0, bp_target - bp_identified),
+                'overallCoveragePct': round(bp_identified / bp_target * 100, 1) if bp_target else 0,
+                'blocksWithAtLeast1': b1,
+                'gaps': {
+                    'gap1': max(0, total_bp_blocks - b1),
+                    'gap2': max(0, total_bp_blocks - bp_snap_vals.get('blocks2', sum(d['blocksWith2'] for d in bp_districts))),
+                    'gap3': max(0, total_bp_blocks - bp_snap_vals.get('blocks3', sum(d['blocksWith3'] for d in bp_districts)))
+                },
                 'demographics': bp_bifurcation_totals,
                 'candidateRecordsCount': len(bp_candidates)
             }
@@ -308,16 +370,10 @@ def process_live_data(sheets_data):
         }
     }
 
-    # Persist updated files to disk
-    os.makedirs('data', exist_ok=True)
-    with open('data/dashboard_summary.json', 'w', encoding='utf-8') as f:
-        json.dump(summary, f, indent=2)
-
-    with open('data/zp_candidates.json', 'w', encoding='utf-8') as f:
-        json.dump(zp_candidates, f)
-
-    with open('data/bp_candidates.json', 'w', encoding='utf-8') as f:
-        json.dump(bp_candidates, f)
+    if persist:
+        _try_write_json('data/dashboard_summary.json', summary, indent=2)
+        _try_write_json('data/zp_candidates.json', zp_candidates)
+        _try_write_json('data/bp_candidates.json', bp_candidates)
 
     _cache['last_synced'] = now_iso
     _cache['summary'] = summary
@@ -326,19 +382,21 @@ def process_live_data(sheets_data):
 
     return summary, zp_candidates, bp_candidates
 
-def sync_now():
+def sync_now(persist=True):
     print("Initiating Live Google Sheet Synchronization...")
     sheets_data = fetch_all_live_sheets()
-    summary, zp_cands, bp_cands = process_live_data(sheets_data)
+    summary, zp_cands, bp_cands = process_live_data(sheets_data, persist=persist)
     print(f"Sync complete! Processed {len(zp_cands)} ZP candidates and {len(bp_cands)} BP candidates.")
     return {
         'status': 'success',
         'lastSynced': _cache['last_synced'],
         'zpCandidateCount': len(zp_cands),
         'bpCandidateCount': len(bp_cands),
-        'summary': summary
+        'summary': summary,
+        'zpCandidates': zp_cands,
+        'bpCandidates': bp_cands
     }
 
 if __name__ == '__main__':
-    res = sync_now()
+    res = sync_now(persist=True)
     print("Test run result:", res['status'], "at", res['lastSynced'])

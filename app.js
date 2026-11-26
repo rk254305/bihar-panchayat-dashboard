@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadSummaryData();
     renderHeroSnapshot();
     startLiveSyncPolling();
+    syncLiveSheetData(false);
     lucide.createIcons();
   } catch (err) {
     console.error('Initialization error:', err);
@@ -1019,10 +1020,11 @@ async function syncLiveSheetData(isManual = false) {
     
     if (data.status === 'success' && data.summary) {
       state.summary = data.summary;
-      state.zpCandidates = null;
-      state.bpCandidates = null;
+      state.zpCandidates = Array.isArray(data.zpCandidates) ? data.zpCandidates : null;
+      state.bpCandidates = Array.isArray(data.bpCandidates) ? data.bpCandidates : null;
       state.lastSyncedTimestamp = new Date(data.lastSynced || Date.now());
       updateSyncTimeDisplay();
+      populateDropdowns();
 
       if (state.activeMainTab === 'hero') {
         renderHeroSnapshot();
