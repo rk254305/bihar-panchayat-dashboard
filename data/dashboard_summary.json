@@ -3,7 +3,7 @@
     "title": "Bihar Panchayat Candidate Identification Dashboard 2026",
     "subtitle": "Executive Tracking System: Zila Parishad & Block Pramukh",
     "reportDate": "26 November 2026",
-    "lastSynced": "2026-11-26T08:49:26.863326+00:00",
+    "lastSynced": "2026-11-26T09:01:22.545265+00:00",
     "isLiveLinked": true,
     "sourceSpreadsheetId": "1Dr5pYkkBs-nR0cYYod5yLLRChorfvsT7Lp0qtwa1xS8",
     "zonesCount": 12,
@@ -28,9 +28,9 @@
       "totalSeats": 1160,
       "targetMultiplier": 5,
       "targetCandidates": 5800,
-      "totalIdentified": 3269,
-      "remainingCandidates": 2531,
-      "overallCoveragePct": 56.4,
+      "totalIdentified": 3350,
+      "remainingCandidates": 2450,
+      "overallCoveragePct": 57.8,
       "seatsWithAtLeast1": 1121,
       "seatsWith1Pct": 96.6,
       "seatsWith2": 1038,
@@ -52,7 +52,7 @@
         "minority": 281,
         "general": 1362
       },
-      "candidateRecordsCount": 3269
+      "candidateRecordsCount": 3346
     },
     "bp": {
       "title": "Block Pramukh (BP)",
@@ -995,22 +995,6 @@
         "identified": 238,
         "remaining": 197,
         "coveragePct": "55%"
-      },
-      {
-        "zone": "65.22%",
-        "seats": 83.08,
-        "target5x": 51.0,
-        "identified": 74.29,
-        "remaining": 36.36,
-        "coveragePct": "51.43%"
-      },
-      {
-        "zone": "20.59%",
-        "seats": 23.64,
-        "target5x": 0,
-        "identified": 23.64,
-        "remaining": 42.4,
-        "coveragePct": "61.74%"
       }
     ],
     "bifurcationTotals": {
@@ -1021,7 +1005,7 @@
       "minority": 281,
       "general": 1362
     },
-    "candidatesCount": 3269
+    "candidatesCount": 3346
   },
   "bp": {
     "districtWise": [

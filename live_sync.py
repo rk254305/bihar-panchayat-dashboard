@@ -8,16 +8,17 @@ import time
 from datetime import datetime, timezone
 
 SHEET_ID = '1Dr5pYkkBs-nR0cYYod5yLLRChorfvsT7Lp0qtwa1xS8'
+ZP_MASTER_SHEET_ID = '1vr-jXwkeaDZ700FMsJ0ZLkuEp7HgAuGrVThpE-2403s'
 
 SHEET_GIDS = {
-    'District Wise Report ZP': '1080948893',
-    'District Wise Report BP': '1882208574',
-    'Progress Report ZP': '158363757',
-    'Progress Report BP': '1179274087',
-    'Bifurcation Report ZP': '1111122327',
-    'Bifurcation Report BP': '363657193',
-    'Final Candidate List': '1838483440',
-    'Block Pramukh': '2018617771'
+    'District Wise Report ZP': (SHEET_ID, '1080948893'),
+    'District Wise Report BP': (SHEET_ID, '1882208574'),
+    'Progress Report ZP': (SHEET_ID, '158363757'),
+    'Progress Report BP': (SHEET_ID, '1179274087'),
+    'Bifurcation Report ZP': (SHEET_ID, '1111122327'),
+    'Bifurcation Report BP': (SHEET_ID, '363657193'),
+    'Final Candidate List': (ZP_MASTER_SHEET_ID, '1040425931'),
+    'Block Pramukh': (SHEET_ID, '2018617771')
 }
 
 _cache = {
@@ -44,8 +45,8 @@ def parse_num(v, default=0):
     except Exception:
         return default
 
-def fetch_single_sheet(name, gid):
-    url = f'https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={gid}'
+def fetch_single_sheet(name, gid, spreadsheet_id=SHEET_ID):
+    url = f'https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=csv&gid={gid}'
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
     with urllib.request.urlopen(req, timeout=15) as resp:
         content = resp.read().decode('utf-8', errors='ignore')
@@ -57,8 +58,8 @@ def fetch_all_live_sheets():
     results = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
         future_to_name = {
-            executor.submit(fetch_single_sheet, name, gid): name
-            for name, gid in SHEET_GIDS.items()
+            executor.submit(fetch_single_sheet, name, gid, sid): name
+            for name, (sid, gid) in SHEET_GIDS.items()
         }
         for future in concurrent.futures.as_completed(future_to_name):
             name = future_to_name[future]
@@ -138,10 +139,10 @@ def process_live_data(sheets_data, persist=True):
             'coverage1Pct': round((b1 / blocks * 100), 1) if blocks > 0 else 0
         })
 
-    # 3. Parse ZP Progress Report dynamically
+    # 3. Parse ZP Progress Report dynamically (top summary table only: rows[:18])
     zp_progress_zones = []
     zp_snap_vals = {}
-    for r in sheets_data.get('Progress Report ZP', []):
+    for r in sheets_data.get('Progress Report ZP', [])[:18]:
         lbl = clean_val(r[0]).lower() if len(r) > 0 else ''
         val_c = clean_val(r[2]) if len(r) > 2 else ''
         if lbl and val_c:
@@ -151,9 +152,9 @@ def process_live_data(sheets_data, persist=True):
             elif lbl.startswith('3'): zp_snap_vals['seats3'] = parse_num(val_c)
             elif lbl.startswith('4 candidate'): zp_snap_vals['seats4'] = parse_num(val_c)
             elif lbl.startswith('5 candidate'): zp_snap_vals['seats5'] = parse_num(val_c)
-            elif 'total identified' in lbl: zp_snap_vals['totalIdentified'] = parse_num(val_c)
+            elif 'total identified candidate' in lbl: zp_snap_vals['totalIdentified'] = parse_num(val_c)
         z_name = clean_val(r[3]) if len(r) > 3 else ''
-        if z_name and z_name.lower() not in ('zone', 'total', '12') and not z_name.isdigit():
+        if z_name and z_name.lower() not in ('zone', 'total', '12') and not z_name.isdigit() and 'candidate' not in z_name.lower():
             seats_z = parse_num(r[5]) if len(r) > 5 else 0
             tgt_z = parse_num(r[7]) if len(r) > 7 else seats_z * 5
             id_z = parse_num(r[9]) if len(r) > 9 else 0
@@ -165,10 +166,10 @@ def process_live_data(sheets_data, persist=True):
                     'identified': id_z, 'remaining': rem_z, 'coveragePct': cov_z
                 })
 
-    # 4. Parse BP Progress Report dynamically
+    # 4. Parse BP Progress Report dynamically (top summary table only: rows[:18])
     bp_progress_zones = []
     bp_snap_vals = {}
-    for r in sheets_data.get('Progress Report BP', []):
+    for r in sheets_data.get('Progress Report BP', [])[:18]:
         lbl = clean_val(r[0]).lower() if len(r) > 0 else ''
         val_c = clean_val(r[2]) if len(r) > 2 else ''
         if lbl and val_c:
@@ -179,7 +180,7 @@ def process_live_data(sheets_data, persist=True):
             elif lbl.startswith('2 candidate'): bp_snap_vals['blocks2'] = parse_num(val_c)
             elif lbl.startswith('3 candidate'): bp_snap_vals['blocks3'] = parse_num(val_c)
         z_name = clean_val(r[4]) if len(r) > 4 else ''
-        if z_name and z_name.lower() not in ('zone', 'total', '12') and not z_name.isdigit():
+        if z_name and z_name.lower() not in ('zone', 'total', '12') and not z_name.isdigit() and 'candidate' not in z_name.lower():
             blks_z = parse_num(r[7]) if len(r) > 7 else 0
             tgt_z = parse_num(r[9]) if len(r) > 9 else blks_z * 3
             id_z = parse_num(r[11]) if len(r) > 11 else 0
@@ -218,14 +219,25 @@ def process_live_data(sheets_data, persist=True):
             }
             break
 
-    # 6. Parse ZP Candidates
+    # 6. Parse ZP Candidates (auto-detect schema between 1vr FCL [col 11] and 1Dr5p FCL [col 12])
     zp_candidates = []
-    for idx, r in enumerate(sheets_data.get('Final Candidate List', [])[2:]):
-        name = clean_val(r[12]) if len(r) > 12 else ''
-        if not name:
+    fcl_rows = sheets_data.get('Final Candidate List', [])
+    fcl_hdr = next((r for r in fcl_rows[:3] if any('candidate name' in clean_val(c).lower() for c in r)), [])
+    has_poc_col = any('poc' in clean_val(c).lower() for c in fcl_hdr)
+    start_row = 2 if (fcl_rows and 'zone details' in clean_val(fcl_rows[0][0]).lower()) else 1
+    for idx, r in enumerate(fcl_rows[start_row:]):
+        if has_poc_col:
+            name = clean_val(r[12]) if len(r) > 12 else ''
+            poc = clean_val(r[10]) if len(r) > 10 else ''
+            off = 13
+        else:
+            name = clean_val(r[11]) if len(r) > 11 else ''
+            poc = ''
+            off = 12
+        if not name or 'probable zp candidate' in name.lower():
             continue
         zp_candidates.append({
-            'id': f"ZP-{idx+1:04d}",
+            'id': f"ZP-{len(zp_candidates)+1:04d}",
             'zone': clean_val(r[0]) if len(r) > 0 else '',
             'district': clean_val(r[1]) if len(r) > 1 else '',
             'pc': clean_val(r[2]) if len(r) > 2 else '',
@@ -236,19 +248,19 @@ def process_live_data(sheets_data, persist=True):
             'seatReservation': clean_val(r[7]) if len(r) > 7 else '',
             'chairman': clean_val(r[8]) if len(r) > 8 else '',
             'viceChairman': clean_val(r[9]) if len(r) > 9 else '',
-            'jsptPoc': clean_val(r[10]) if len(r) > 10 else '',
+            'jsptPoc': poc,
             'name': name,
-            'contact': clean_val(r[13]) if len(r) > 13 else '',
-            'category': clean_val(r[14]) if len(r) > 14 else '',
-            'caste': clean_val(r[15]) if len(r) > 15 else '',
-            'gender': clean_val(r[16]) if len(r) > 16 else '',
-            'age': clean_val(r[17]) if len(r) > 17 else '',
-            'briefProfile': clean_val(r[18]) if len(r) > 18 else '',
-            'jsDesignation': clean_val(r[19]) if len(r) > 19 else '',
-            'recommendation': clean_val(r[20]) if len(r) > 20 else '',
-            'remarks': clean_val(r[21]) if len(r) > 21 else '',
-            'wantsContest': clean_val(r[22]) if len(r) > 22 else '',
-            'priority': clean_val(r[23]) if len(r) > 23 else ''
+            'contact': clean_val(r[off]) if len(r) > off else '',
+            'category': clean_val(r[off+1]) if len(r) > off+1 else '',
+            'caste': clean_val(r[off+2]) if len(r) > off+2 else '',
+            'gender': clean_val(r[off+3]) if len(r) > off+3 else '',
+            'age': clean_val(r[off+4]) if len(r) > off+4 else '',
+            'briefProfile': clean_val(r[off+5]) if len(r) > off+5 else '',
+            'jsDesignation': clean_val(r[off+6]) if len(r) > off+6 else '',
+            'recommendation': clean_val(r[off+7]) if len(r) > off+7 else '',
+            'remarks': clean_val(r[off+8]) if len(r) > off+8 else '',
+            'wantsContest': clean_val(r[off+9]) if len(r) > off+9 else '',
+            'priority': clean_val(r[off+10]) if len(r) > off+10 else ''
         })
 
     # 7. Parse BP Candidates
@@ -290,7 +302,11 @@ def process_live_data(sheets_data, persist=True):
 
     total_zp_seats = zp_snap_vals.get('totalSeats', 1160)
     zp_target = total_zp_seats * 5
-    zp_identified = len(zp_candidates) or zp_snap_vals.get('totalIdentified', 3350)
+    zp_identified = (
+        zp_snap_vals.get('totalIdentified')
+        or sum(z['identified'] for z in zp_progress_zones)
+        or len(zp_candidates)
+    )
     s1 = zp_snap_vals.get('seats1', sum(d['seatsWith1'] for d in zp_districts))
     s2 = zp_snap_vals.get('seats2', sum(d['seatsWith2'] for d in zp_districts))
     s3 = zp_snap_vals.get('seats3', sum(d['seatsWith3'] for d in zp_districts))

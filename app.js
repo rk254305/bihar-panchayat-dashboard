@@ -1036,7 +1036,7 @@ async function syncLiveSheetData(isManual = false) {
         renderZoneDeepDive(state.selectedZoneTab);
       }
 
-      showToast(`Google Sheet synced! (${data.zpCandidateCount} ZP & ${data.bpCandidateCount} BP updated)`, 'success');
+      showToast(`Google Sheet synced! (${data.summary.snapshot.zp.totalIdentified} ZP & ${data.summary.snapshot.bp.totalIdentified} BP updated)`, 'success');
     }
   } catch (err) {
     console.error('Live sync error:', err);
@@ -1458,6 +1458,10 @@ function renderHeroSnapshot() {
   // Track 1: Zila Parishad (ZP Only)
   const zpIdEl = document.getElementById('hero-zp-identified');
   if (zpIdEl) zpIdEl.textContent = snapshot.zp.totalIdentified.toLocaleString();
+  const drZp = document.getElementById('drawer-zp-count');
+  if (drZp) drZp.textContent = (snapshot.zp.candidateRecordsCount || snapshot.zp.totalIdentified).toLocaleString();
+  const drBp = document.getElementById('drawer-bp-count');
+  if (drBp) drBp.textContent = snapshot.bp.totalIdentified.toLocaleString();
   const zpCovEl = document.getElementById('hero-zp-coverage-pct');
   if (zpCovEl) zpCovEl.textContent = `${snapshot.zp.overallCoveragePct}% Done`;
   const zpSeat1El = document.getElementById('hero-zp-seat1');
